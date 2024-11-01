@@ -77,7 +77,7 @@ class ArmazemDadosPartilhados {
         int i;
         try {
             i = 0;
-            for (Map.Entry<String,byte[]> pair : pairs.entrySet()) {
+            for (Map.Entry<String,byte[]> pair : pairs2.entrySet()) {
                 String key = pair.getKey();
                 dado[i] = map.get(key);
                 if (dado == null) {
@@ -94,7 +94,7 @@ class ArmazemDadosPartilhados {
             l.unlock();
         }
         i = 0;
-        for (byte[] value : pairs.values()) {
+        for (byte[] value : pairs2.values()) {
             if (dado[i] != null) {
                 dado[i].setValue(value);
                 dado[i].l.unlock;
