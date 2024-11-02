@@ -32,7 +32,7 @@ class ArmazemDadosPartilhados {
             dado = map.get(key);
             if (dado == null) {
                 dado = new Dado(value);
-                map.put(key,value);
+                map.put(key,dado);
                 return;
             }
             dado.l.lock();
@@ -80,7 +80,7 @@ class ArmazemDadosPartilhados {
             for (Map.Entry<String,byte[]> pair : pairs2.entrySet()) {
                 String key = pair.getKey();
                 dado[i] = map.get(key);
-                if (dado == null) {
+                if (dado[i] == null) {
                     byte[] value = pair.getValue();
                     Dado d = new Dado(value);
                     map.put(key,d);
@@ -97,7 +97,7 @@ class ArmazemDadosPartilhados {
         for (byte[] value : pairs2.values()) {
             if (dado[i] != null) {
                 dado[i].setValue(value);
-                dado[i].l.unlock;
+                dado[i].l.unlock();
             }
             i++;
         }
@@ -111,7 +111,7 @@ class ArmazemDadosPartilhados {
         l.lock();
         try {
             for (int i = 0; i < orderedKeys.size(); i++) {
-                dado[i] = map.get(orderedKeys[i]);
+                dado[i] = map.get(orderedKeys[i]); //orderedKeys é um treeset não um array
                 if (dado[i] != null) dado[i].l.lock();
                 //else pairs.put(orderedKeys[i],null);
             }
