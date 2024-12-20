@@ -32,7 +32,7 @@ public class Menu {
         this.handlers = new ArrayList<>();
         for (String s : options) {
             this.preConditions.add(() -> true);
-            this.handlers.add(() -> System.out.println("\nOpção não implementada"));
+            this.handlers.add(() -> {System.out.println("\nOpção não implementada"); pressEnterToContinue();});
         }
     }
 
