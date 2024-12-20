@@ -103,7 +103,6 @@ class ConnectionThread implements Runnable{
     }
     public void run(){
         boolean connectionOpen = true;
-        try {
             boolean authenticated = false;
             while((!authenticated)&&connectionOpen){
                 Message m = connection.receive();
@@ -138,7 +137,7 @@ class ConnectionThread implements Runnable{
                     if(receive.getClass().getSimpleName().equals("Exit")){
                         Exit e = (Exit) receive;
                         connectionOpen = false;
-                        sendResults.join();
+                        sendResults.interrupt();
                         clients.remove(e.getID());
                         break;
                     }
@@ -147,7 +146,7 @@ class ConnectionThread implements Runnable{
                     }
                 }
             }
-        } catch (Exception ignore) { }
+            connection.close();
     }
 }
 
@@ -161,12 +160,17 @@ class ConnectionResultsThread implements Runnable{
     }
 
     public void run(){
-        try {
-            boolean connectionOpen = true;
-            while(connectionOpen){
-                connection.send(results.unqueue());
+        boolean connectionOpen = true;
+        while(connectionOpen){
+            Message m;
+            try {
+                m = results.unqueue();
+                connection.send(m);
+            } 
+            catch (InterruptedException e) {
+                connectionOpen = false;
             }
-        } catch (Exception ignore) { }
+        }
     }
 }
 

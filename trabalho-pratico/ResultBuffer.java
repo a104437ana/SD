@@ -12,14 +12,13 @@ public class ResultBuffer{
         lock.lock();
         try{
             resultBuffer.add(m);
-
-        } catch (Exception ignore) { }
+        }
         finally{
             lock.unlock();
         }
     }
 
-    public Message unqueue(){
+    public Message unqueue() throws InterruptedException{
         Message m = null;
         lock.lock();
         try{
@@ -32,7 +31,7 @@ public class ResultBuffer{
                     break;
                 }
             }
-        } catch (Exception ignore) { }
+        }
         finally{
             lock.unlock();
         }
