@@ -6,6 +6,9 @@ public interface Message {
 
     public void serialize(DataOutputStream out) throws IOException;
 
-    public Message deserialize(DataInputStream in) throws IOException;
+    public static Message deserialize(DataInputStream in) throws IOException{
+
+        return null;
+    }
 
 }

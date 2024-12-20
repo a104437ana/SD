@@ -11,10 +11,39 @@ public class Put implements Message {
         this.value = value;
     }
 
-    public void serialize(DataOutputStream out) {
+    public String getKey(){
+        return this.key;
     }
 
-    public Message deserialize(DataInputStream in) {
-        return null;
+    public byte[] getValue(){
+        return this.value.clone();
+    }
+
+    public void serialize(DataOutputStream out) throws IOException{
+        try{
+            out.writeUTF(key);
+            out.writeInt(this.value.length);
+            out.write(value);
+            out.flush();
+        }catch (IOException e){
+            throw new IOException(e);
+        }
+        
+    }
+
+    public static Put deserialize(DataInputStream in) throws IOException{
+        
+        try{
+        String chave=in.readUTF();
+
+        int tamanho=in.readInt();
+
+        byte[] value=new byte[tamanho];
+        in.readFully(value);
+        
+        return new Put(chave,value);
+    }catch (IOException e){
+        throw new IOException(e);
+    }
     }
 }

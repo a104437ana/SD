@@ -15,9 +15,10 @@ public class Get implements Message {
 
     public void serialize(DataOutputStream out) throws IOException {
         out.writeUTF(key);
+        out.flush();
     }
 
-    public Message deserialize(DataInputStream in) throws IOException {
+    public static Get deserialize(DataInputStream in) throws IOException {
         String key = in.readUTF();
         return new Get(key);
     }
