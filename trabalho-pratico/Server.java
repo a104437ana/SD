@@ -102,19 +102,50 @@ class ConnectionThread implements Runnable{
         this.buffer = buffer;
     }
     public void run(){
+        boolean connectionOpen = true;
         try {
-            Message m = connection.receive();
-            //////////////////////////////////////////
-            /// to do - registo
-            /// //////////////////////////////////////7
-            results = new ResultBuffer();
-            clients.put("id", results);
-            sendResults = new Thread(new ConnectionResultsThread(connection, results));
-            sendResults.run();
-            boolean connectionOpen = true;
-            while(connectionOpen){
-                Message receive = connection.receive();
-                buffer.queue(receive);
+            boolean authenticated = false;
+            while((!authenticated)&&connectionOpen){
+                Message m = connection.receive();
+                if(m.getClass().getSimpleName().equals("Exit")){
+                    connectionOpen = false;
+                    break;
+                }
+                else if(m.getClass().getSimpleName().equals("Register")){
+                    Register r = (Register) m;
+                    credentials.register(r.getID(), r.getPassword());
+                }
+                else if (m.getClass().getSimpleName().equals("Login")){
+                    Login l = (Login) m;
+                    results = new ResultBuffer();
+                    boolean sucess = credentials.login(l.getID(), l.getPassword());
+                    if (sucess){
+                        clients.put(l.getID(), results);
+                        connection.send(new ResLogin(sucess));
+                        authenticated = true;
+                    }
+                    else{
+                        connection.send(new ResLogin(sucess));
+                        break;
+                    }
+                }
+            }
+            if(authenticated&&connectionOpen){
+                sendResults = new Thread(new ConnectionResultsThread(connection, results));
+                sendResults.run();
+                while(connectionOpen){
+                    Message receive = connection.receive();
+                    if(receive.getClass().getSimpleName().equals("Exit")){
+                        Exit e = (Exit) receive;
+                        connectionOpen = false;
+                        sendResults.join();
+                        clients.remove(e.getID());
+                        break;
+                    }
+                    else{
+                        buffer.queue(receive);
+                    }
+                }
             }
         } catch (Exception ignore) { }
     }

@@ -2,10 +2,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Logout implements Message {
+public class Exit implements Message {
     private String id;
 
-    public Logout(String id) {
+    public Exit(String id) {
         this.id = id;
     }
 
@@ -19,6 +19,6 @@ public class Logout implements Message {
 
     public Message deserialize(DataInputStream in) throws IOException {
         String id = in.readUTF();
-        return new Logout(id);
+        return new Exit(id);
     }
 }
