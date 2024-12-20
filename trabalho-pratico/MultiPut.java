@@ -40,4 +40,16 @@ public class MultiPut implements Message{
             }
         }
 
+    public Map<String,byte[]> getPairs() {
+        Map<String,byte[]> pairsMap = new HashMap<>();
+        for (Map.Entry<String,byte[]> e : pairs.entrySet()) {
+            byte[] v = e.getValue();
+            byte[] value = new byte[v.length];
+            for (int i = 0; i < v.length; i++) {
+                value[i] = v[i];
+            }
+            pairsMap.put(e.getKey(), value);
+        }
+        return pairsMap;
+    }
 }   

@@ -41,4 +41,12 @@ public class MultiGet implements Message {
         }
         return new MultiGet(keys);
     }
+
+    public Set<String> getKeys() {
+        Set<String> keySet = new HashSet<>();
+        for (String s : keys) {
+            keySet.add(s);
+        }
+        return keySet;
+    }
 }

@@ -11,8 +11,8 @@ public class ResGet implements Message {
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
-            out.writeInt(value.length);  
-            out.write(value);
+            out.writeInt(value.length);
+            out.write(value, 0, value.length);
         } catch (IOException e) {
         }
     }

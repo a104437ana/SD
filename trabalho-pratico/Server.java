@@ -178,9 +178,11 @@ class ConnectionResultsThread implements Runnable{
 class RequestThread implements Runnable{
     private MessageBuffer requests;
     private ClientsMap cli;
-    public RequestThread(MessageBuffer buffer, ClientsMap clients){
+    private ArmazemDadosPartilhados dataBase;
+    public RequestThread(MessageBuffer buffer, ClientsMap clients, ArmazemDadosPartilhados dataBase){
         this.requests = buffer;
         this.cli = clients;
+        this.dataBase = dataBase;
     }
     public void run(){ //trocar para alguma condição
         while(true){
@@ -188,9 +190,78 @@ class RequestThread implements Runnable{
             //////////////////////////////////////////////////////////////
             //processar a mensagem
             /////////////////////////////////////////////////////////////
-            Message res = null;
+            Message res = proccessMessage(m);
             cli.queueResult("", res);
         }
+    }
+    /**
+     * Processa uma mensagem do tipo ... Get
+     * @param message
+     */
+    private Message proccessMessage(Get message) {
+        byte[] value = dataBase.get(message.getKey());
+        Message res = new ResGet(value);
+        return res;
+    }
+
+    /**
+     * Processa uma mensagem do tipo ... Put
+     * @param message
+     */
+    private Message proccessMessage(Put message) {
+        boolean success = true;
+        dataBase.put(message.getKey(), message.getValue()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        Message res = new ResPut(success);
+        return res;
+    }
+
+    /**
+     * Processa uma mensagem do tipo ... MultiGet
+     * @param message
+     */
+    private Message proccessMessage(MultiGet message) {
+        Map<String,byte[]> pairs = dataBase.multiGet(message.getKeys());
+        Message res = new ResMultiGet(pairs);
+        return res;
+    }
+
+    /**
+     * Processa uma mensagem do tipo ... MultiPut
+     * @param message
+     */
+    private Message proccessMessage(MultiPut message) {
+        boolean success = true;
+        dataBase.multiPut(message.getPairs()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        Message res = new ResMultiPut(success);
+        return res;
+    }
+
+    /**
+     * Processa uma mensagem do tipo ... GetWhen
+     * @param message
+     */
+    private Message proccessMessage(GetWhen message) {
+        byte[] value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        Message res = new ResGetWhen(value);
+        return res;
+    }
+
+    /**
+     * Método que redireciona o processo de uma mensagem de tipo geral Message
+     * para o método correto de processo, através do tipo concreto do objeto
+     * @param message
+     */
+    private Message proccessMessage(Message message) {
+        Method m = null;
+        Message msg = null;
+        try {
+            m = getClass().getMethod("processMessage", message.getClass());
+            msg = (Message) m.invoke(getClass(), message);
+        }
+        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return msg;
     }
 }
 
@@ -201,11 +272,11 @@ class ThreadPool{
 
     private ClientsMap clients;
 
-    public ThreadPool(ClientsMap map, MessageBuffer requests){
+    public ThreadPool(ClientsMap map, MessageBuffer requests, ArmazemDadosPartilhados dataBase){
         this.clients = map;
         this.requestBuffer = requests;
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
-            threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients));
+            threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients, dataBase));
             threadPool[i].run();
         }
     }
@@ -213,45 +284,14 @@ class ThreadPool{
 
 public class Server {
     private final static int S = 10;
-    private ArmazemDadosPartilhados dataBase;
-
-    // /**
-    //  * Processa uma mensagem do tipo ... Get
-    //  * @param message
-    //  */
-    // private void proccessMessage(Get message) {
-    // }
-
-    // /**
-    //  * Processa uma mensagem do tipo ... Put
-    //  * @param message
-    //  */
-    // private void proccessMessage(Put message) {
-    // }
-
-    // /**
-    //  * Método que redireciona o processo de uma mensagem de tipo geral Message
-    //  * para o método correto de processo, através do tipo concreto do objeto
-    //  * @param message
-    //  */
-    // private void proccessMessage(Message message) {
-    //     Method m = null;
-    //     try {
-    //         m = getClass().getMethod("processMessage", message.getClass());
-    //         m.invoke(getClass(), message);
-    //     }
-    //     catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
-
+    private static ArmazemDadosPartilhados dataBase = new ArmazemDadosPartilhados();
 
     public static void main(String[] args){
 
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
         MessageBuffer messages = new MessageBuffer();
-        ThreadPool pool = new ThreadPool(clients, messages);
+        ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
 
         try{
             ServerSocket ss = new ServerSocket(10000);
