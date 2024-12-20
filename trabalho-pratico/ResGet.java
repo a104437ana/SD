@@ -1,7 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-public class ResGet extends Message {
+public class ResGet implements Message {
     public void serialize(DataOutputStream out) {
     }
 

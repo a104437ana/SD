@@ -1,14 +1,14 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
+import java.io.IOException;
 
-public class Put extends Message {
-    private String[] key;
-    private ArrayList<byte[]> value;
+public class Put implements Message {
+    private String key;
+    private byte[] value;
 
-    Put (String[] k, ArrayList<byte[]> v) {
-        this.key = k;
-        this.value = v;
+    public Put (String key, byte[] value) {
+        this.key = key;
+        this.value = value;
     }
 
     public void serialize(DataOutputStream out) {

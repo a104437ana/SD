@@ -1,11 +1,11 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
-public abstract class Message {
-    public void serialize(DataOutputStream out) {
-    }
+public interface Message {
 
-    public Message deserialize(DataInputStream in) {
-        return null;
-    }
+    public void serialize(DataOutputStream out) throws IOException;
+
+    public Message deserialize(DataInputStream in) throws IOException;
+
 }

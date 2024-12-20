@@ -1,17 +1,24 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
-public class Get extends Message {
-    private String[] key;
+public class Get implements Message {
+    private String key;
 
-    Get (String[] k) {
-        this.key = k;
+    public Get(String key) {
+        this.key = key;
     }
 
-    public void serialize(DataOutputStream out) {
+    public String getKey() {
+        return key;
     }
 
-    public Message deserialize(DataInputStream in) {
-        return null;
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeUTF(key);
+    }
+
+    public Message deserialize(DataInputStream in) throws IOException {
+        String key = in.readUTF();
+        return new Get(key);
     }
 }
