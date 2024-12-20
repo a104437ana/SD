@@ -36,16 +36,15 @@ class ClientsMap{
             lock.writeLock().unlock();
         }
     }
-    public ResultBuffer get(String id){
-        ResultBuffer res = null;
+    public void queueResult(String id, Message res){
         lock.readLock().lock();
         try{
-            res = clients.get(id);
+            ResultBuffer buffer = clients.get(id);
+            buffer.queue(res);
         }
         finally{
             lock.readLock().unlock();
         }
-        return res;
     }
     public void remove(String id){
         lock.writeLock().lock();
@@ -154,7 +153,7 @@ class RequestThread implements Runnable{
             //processar a mensagem
             /////////////////////////////////////////////////////////////
             Message res = null;
-            cli.get("").queue(res);;
+            cli.queueResult("", res);
         }
     }
 }
