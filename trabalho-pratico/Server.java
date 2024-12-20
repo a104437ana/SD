@@ -241,7 +241,13 @@ class RequestThread implements Runnable{
      * @param message
      */
     private Message proccessMessage(GetWhen message) {
-        byte[] value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        byte[] value = null;
+        try {
+            value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Message res = new ResGetWhen(value);
         return res;
     }
