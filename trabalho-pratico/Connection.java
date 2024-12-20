@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Classe Connection responsável por enviar Messages da origem ao destino,
@@ -14,7 +15,9 @@ import java.net.Socket;
 public class Connection {
     private Socket socket;
     private DataInputStream in;
+    private ReentrantLock lockIn;    
     private DataOutputStream out;
+    private ReentrantLock lockOut;
 
     /**
      * Construtor parametrizado que cria um objeto Connection
@@ -26,7 +29,9 @@ public class Connection {
     Connection (InetAddress ip, int port) throws IOException {
         this.socket = new Socket(ip, port);        
         this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        this.lockIn = new ReentrantLock();
         this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        this.lockOut = new ReentrantLock();
     }
 
     /**
@@ -38,7 +43,9 @@ public class Connection {
     Connection (Socket s) throws IOException {
         this.socket = s;
         this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        this.lockIn = new ReentrantLock();
         this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        this.lockOut = new ReentrantLock();
     }
 
     /**
@@ -56,5 +63,11 @@ public class Connection {
      */
     public Message receive() {
         return null;
+    }
+
+    public void close(){
+        try {
+            this.socket.close();
+        } catch (Exception ignore) {}
     }
 }
