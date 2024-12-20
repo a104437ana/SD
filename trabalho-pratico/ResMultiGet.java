@@ -1,0 +1,42 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ResMultiGet implements Message {
+    Map<String, byte[]> values;  
+    
+    public ResMultiGet(Map<String, byte[]> res){
+        this.values=res;
+    }
+    
+    public void serialize(DataOutputStream out) throws IOException{
+        try {
+            out.writeInt(values.size());
+            for(Map.Entry<String,byte[]> entry : values.entrySet()){
+                out.writeUTF(entry.getKey());
+                out.writeInt(entry.getValue().length);  
+                out.write(entry.getValue());
+            }
+        } catch (IOException e) {
+        }
+    }
+
+    public Message deserialize(DataInputStream in)throws IOException {
+        try{
+            int entries = in.readInt();
+            Map<String, byte[]> res = new HashMap<String,byte[]>(entries);
+            for(int i = 0; i<entries; i++){
+                String key = in.readUTF();
+                int tamanho = in.readInt();
+                byte[] value = new byte[tamanho];
+                in.readFully(value);
+                res.put(key, value);
+            }
+            return new ResMultiGet(res);
+        }catch (IOException e){
+            return null;
+        }
+    }
+}

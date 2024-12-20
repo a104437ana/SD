@@ -113,6 +113,7 @@ class ConnectionThread implements Runnable{
                 else if(m.getClass().getSimpleName().equals("Register")){
                     Register r = (Register) m;
                     credentials.register(r.getID(), r.getPassword());
+                    connection.send(new ResRegister(true));
                 }
                 else if (m.getClass().getSimpleName().equals("Login")){
                     Login l = (Login) m;
