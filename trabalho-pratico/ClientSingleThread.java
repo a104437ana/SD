@@ -8,6 +8,7 @@ import java.util.Set;
 public class ClientSingleThread implements Client {
     Socket socket;
     Connection connection;
+    //Cliente id;
 
     public ClientSingleThread(Socket socket) throws IOException{
         this.socket=socket;
@@ -104,20 +105,6 @@ public class ClientSingleThread implements Client {
         return null;
     }
     
-    /**
-     * Processa uma mensagem do tipo ... Get
-     * @param message
-     */
-    private void processMessage(Get message) {
-    }
-
-    /**
-     * Processa uma mensagem do tipo ... Put
-     * @param message
-     */
-    private void processMessage(Put message) {
-    }
-
     /**
      * Método que redireciona o processo de uma mensagem de tipo geral Message
      * para o método correto de processo, através do tipo concreto do objeto
