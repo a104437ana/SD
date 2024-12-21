@@ -58,10 +58,13 @@ public class Connection {
      * @param m
      */
     public void send(Message m)  throws IOException{
+        lockOut.lock();
             try {
                 m.serialize(out);
                 
             } catch (IOException e) {
+            }finally{
+                lockOut.unlock();
             }
     }
 
@@ -73,7 +76,6 @@ public class Connection {
     public Message receive(String id) throws IOException {
         lockIn.lock();
         try{
-        try {
             String tipo = in.readUTF();
             Message message;
             switch (tipo) {
@@ -140,7 +142,6 @@ public class Connection {
             }
             
         } catch (IOException e) {
-        }
         }finally{
             lockIn.unlock();
         }
