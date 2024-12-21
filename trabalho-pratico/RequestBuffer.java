@@ -3,14 +3,14 @@ import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class MessageBuffer{
+public class RequestBuffer{
     final static int BUFFER_SIZE = 30;
-    private Queue<Message> requestBuffer = new ArrayDeque<Message>(BUFFER_SIZE);
+    private Queue<Request> requestBuffer = new ArrayDeque<Request>(BUFFER_SIZE);
     private ReentrantLock lock = new ReentrantLock();
     private Condition bufferEmpty = lock.newCondition();
     private Condition bufferFull = lock.newCondition();
 
-    public void queue(Message m){
+    public void queue(Request r){
         lock.lock();
         try{
             while(requestBuffer.size()==BUFFER_SIZE){
@@ -18,7 +18,7 @@ public class MessageBuffer{
                     bufferFull.await();
                 }
                 else{
-                    requestBuffer.add(m);
+                    requestBuffer.add(r);
                     bufferEmpty.signalAll();
                     break;
                 }
@@ -29,8 +29,8 @@ public class MessageBuffer{
         }
     }
 
-    public Message unqueue(){
-        Message m = null;
+    public Request unqueue(){
+        Request r = null;
         lock.lock();
         try{
             while(requestBuffer.isEmpty()){
@@ -38,7 +38,7 @@ public class MessageBuffer{
                     bufferEmpty.await();
                 }
                 else{
-                    m = requestBuffer.remove();
+                    r = requestBuffer.remove();
                     bufferFull.signalAll();
                     break;
                 }
@@ -47,6 +47,6 @@ public class MessageBuffer{
         finally{
             lock.unlock();
         }
-        return m;
+        return r;
     }
 }

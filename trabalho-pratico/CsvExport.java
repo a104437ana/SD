@@ -10,7 +10,7 @@ public class CsvExport {
     private static final String SEPARATOR = ";";
     private static final String NEW_LINE = "\n";
 
-    public void exportDataCsv(List<String[]> data, String directory, String name) {
+    public String exportDataCsv(List<String[]> data, String directory, String name) {
         File dir = new File(directory);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -45,6 +45,7 @@ public class CsvExport {
         catch (IOException e) {
             e.printStackTrace();
         }
+        return fileName;
     }
 
     public static void main(String[] args) {
