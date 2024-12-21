@@ -1,9 +1,19 @@
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientSingleThread implements Client {
+    Socket socket;
+    Connection connection;
+
+    public ClientSingleThread(Socket socket) throws IOException{
+        this.socket=socket;
+        this.connection=new Connection(socket);
+    }
+
     /**
      * Método register que permite a um cliente se registar no servidor
      * @param user
@@ -31,7 +41,12 @@ public class ClientSingleThread implements Client {
      * @param key
      * @param value
      */
-    public void put(String key, byte[] value) {
+    public void put(String key, byte[] value){
+        Put put=new Put(key, value);
+        try {
+            connection.send(put);
+        } catch (IOException e) {
+        }
     }
 
     /**
@@ -40,8 +55,16 @@ public class ClientSingleThread implements Client {
      * @param key
      * @return
      */
-    public byte[] get(String key) {
-        return null;
+    public byte[] get(String key) { 
+        Get g=new Get(key);
+        try {
+            connection.send(g); //envia a mensagem
+        } catch (IOException e) {
+        }
+        //procura a resposta
+        
+
+        
     }
 
     /**
@@ -50,6 +73,11 @@ public class ClientSingleThread implements Client {
      * @param pairs
      */
     public void multiPut(Map<String,byte[]> pairs) {
+        MultiPut mp=new MultiPut(pairs);
+        try {
+            connection.send(mp);
+        } catch (IOException e) {
+        }
     }
 
     /**
