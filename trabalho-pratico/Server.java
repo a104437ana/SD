@@ -46,7 +46,7 @@ class ClientsMap{
         lock.writeLock().lock();
         try{
             clients.remove(id);
-            isFull.signalAll();
+            isFull.signal();
         } catch (Exception ignore) { }
         finally{
             lock.writeLock().unlock();
