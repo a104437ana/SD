@@ -80,14 +80,14 @@ public class ClientSingleThread implements Client {
      * Processa uma mensagem do tipo ... Get
      * @param message
      */
-    private void proccessMessage(Get message) {
+    private void processMessage(Get message) {
     }
 
     /**
      * Processa uma mensagem do tipo ... Put
      * @param message
      */
-    private void proccessMessage(Put message) {
+    private void processMessage(Put message) {
     }
 
     /**
@@ -95,7 +95,7 @@ public class ClientSingleThread implements Client {
      * para o método correto de processo, através do tipo concreto do objeto
      * @param message
      */
-    private void proccessMessage(Message message) {
+    private void processMessage(Message message) {
         Method m = null;
         try {
             m = getClass().getMethod("processMessage", message.getClass());

@@ -59,16 +59,16 @@ class ClientsMap{
 }
 
 class AuthenticationMap{
-    Map<String,String> credencials;
+    Map<String,String> credentials;
     ReentrantReadWriteLock lock;
     public AuthenticationMap(){
-        this.credencials = new HashMap<String, String>();
+        this.credentials = new HashMap<String, String>();
         this.lock = new ReentrantReadWriteLock();
     }
     public void register(String id, String password){
         lock.writeLock().lock();
         try{
-            this.credencials.put(id, password);
+            this.credentials.put(id, password);
         }
         finally{
             lock.writeLock().unlock();
@@ -78,7 +78,7 @@ class AuthenticationMap{
         boolean res = false;
         lock.readLock().lock();
         try{
-            String correctPassword = credencials.get(id);
+            String correctPassword = credentials.get(id);
             if(password.equals(correctPassword)) res = true;
         }
         finally{
@@ -92,10 +92,10 @@ class ConnectionThread implements Runnable{
     Connection connection;
     ClientsMap clients;
     AuthenticationMap credentials;
-    MessageBuffer buffer;
+    RequestBuffer buffer;
     Thread sendResults;
     ResultBuffer results;
-    public ConnectionThread(Connection c, ClientsMap cli, AuthenticationMap cred, MessageBuffer buffer){
+    public ConnectionThread(Connection c, ClientsMap cli, AuthenticationMap cred, RequestBuffer buffer){
         this.connection = c;
         this.clients = cli;
         this.credentials = cred;
@@ -104,6 +104,7 @@ class ConnectionThread implements Runnable{
     public void run(){
         boolean connectionOpen = true;
             boolean authenticated = false;
+            String authenticatedId = null;
             while((!authenticated)&&connectionOpen){
                 Message m = connection.receive();
                 if(m.getClass().getSimpleName().equals("Exit")){
@@ -123,6 +124,7 @@ class ConnectionThread implements Runnable{
                         clients.put(l.getID(), results);
                         connection.send(new ResLogin(sucess));
                         authenticated = true;
+                        authenticatedId = l.getID();
                     }
                     else{
                         connection.send(new ResLogin(sucess));
@@ -143,7 +145,8 @@ class ConnectionThread implements Runnable{
                         break;
                     }
                     else{
-                        buffer.queue(receive);
+                        Request r = new Request(authenticatedId, receive);
+                        buffer.queue(r);
                     }
                 }
             }
@@ -176,29 +179,27 @@ class ConnectionResultsThread implements Runnable{
 }
 
 class RequestThread implements Runnable{
-    private MessageBuffer requests;
+    private RequestBuffer requests;
     private ClientsMap cli;
     private ArmazemDadosPartilhados dataBase;
-    public RequestThread(MessageBuffer buffer, ClientsMap clients, ArmazemDadosPartilhados dataBase){
+    public RequestThread(RequestBuffer buffer, ClientsMap clients, ArmazemDadosPartilhados dataBase){
         this.requests = buffer;
         this.cli = clients;
         this.dataBase = dataBase;
     }
     public void run(){ //trocar para alguma condição
         while(true){
-            Message m = requests.unqueue();
-            //////////////////////////////////////////////////////////////
-            //processar a mensagem
-            /////////////////////////////////////////////////////////////
-            Message res = proccessMessage(m);
-            cli.queueResult("", res);
+            Request r = requests.unqueue();
+            Message m = r.getMessage();
+            Message res = processMessage(m);
+            cli.queueResult(r.getId(), res);
         }
     }
     /**
      * Processa uma mensagem do tipo ... Get
      * @param message
      */
-    private Message proccessMessage(Get message) {
+    private Message processMessage(Get message) {
         byte[] value = dataBase.get(message.getKey());
         Message res = new ResGet(value);
         return res;
@@ -208,7 +209,7 @@ class RequestThread implements Runnable{
      * Processa uma mensagem do tipo ... Put
      * @param message
      */
-    private Message proccessMessage(Put message) {
+    private Message processMessage(Put message) {
         boolean success = true;
         dataBase.put(message.getKey(), message.getValue()); // Alterar, método deve retornar um booleano ou dar trow de exception
         Message res = new ResPut(success);
@@ -219,7 +220,7 @@ class RequestThread implements Runnable{
      * Processa uma mensagem do tipo ... MultiGet
      * @param message
      */
-    private Message proccessMessage(MultiGet message) {
+    private Message processMessage(MultiGet message) {
         Map<String,byte[]> pairs = dataBase.multiGet(message.getKeys());
         Message res = new ResMultiGet(pairs);
         return res;
@@ -229,7 +230,7 @@ class RequestThread implements Runnable{
      * Processa uma mensagem do tipo ... MultiPut
      * @param message
      */
-    private Message proccessMessage(MultiPut message) {
+    private Message processMessage(MultiPut message) {
         boolean success = true;
         dataBase.multiPut(message.getPairs()); // Alterar, método deve retornar um booleano ou dar trow de exception
         Message res = new ResMultiPut(success);
@@ -240,7 +241,7 @@ class RequestThread implements Runnable{
      * Processa uma mensagem do tipo ... GetWhen
      * @param message
      */
-    private Message proccessMessage(GetWhen message) {
+    private Message processMessage(GetWhen message) {
         byte[] value = null;
         try {
             value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond()); // Alterar, método deve retornar um booleano ou dar trow de exception
@@ -257,7 +258,7 @@ class RequestThread implements Runnable{
      * para o método correto de processo, através do tipo concreto do objeto
      * @param message
      */
-    private Message proccessMessage(Message message) {
+    private Message processMessage(Message message) {
         Method m = null;
         Message msg = null;
         try {
@@ -274,11 +275,11 @@ class RequestThread implements Runnable{
 class ThreadPool{
     final static int THREAD_POOL_SIZE = 10;
     private Thread[] threadPool = new Thread[THREAD_POOL_SIZE];
-    private MessageBuffer requestBuffer;
+    private RequestBuffer requestBuffer;
 
     private ClientsMap clients;
 
-    public ThreadPool(ClientsMap map, MessageBuffer requests, ArmazemDadosPartilhados dataBase){
+    public ThreadPool(ClientsMap map, RequestBuffer requests, ArmazemDadosPartilhados dataBase){
         this.clients = map;
         this.requestBuffer = requests;
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
@@ -296,7 +297,7 @@ public class Server {
 
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
-        MessageBuffer messages = new MessageBuffer();
+        RequestBuffer messages = new RequestBuffer();
         ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
 
         try{
