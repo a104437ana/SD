@@ -21,7 +21,7 @@ public class ResGet implements Message {
         try{
             int tamanho=in.readInt();
             byte[] resposta=new byte[tamanho];
-            in.readFully(resposta);
+            in.read(resposta, 0, tamanho);
             return new ResGet(resposta);
         }catch (IOException e){
             return null;
