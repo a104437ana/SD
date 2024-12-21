@@ -18,7 +18,6 @@ public class Get implements Message {
     public void serialize(DataOutputStream out) throws IOException {
         out.writeUTF(tipo);
         out.writeUTF(key);
-        out.flush();
     }
 
     public static Get deserialize(DataInputStream in) throws IOException {

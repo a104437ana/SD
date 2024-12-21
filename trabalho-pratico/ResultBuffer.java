@@ -23,14 +23,9 @@ public class ResultBuffer{
         lock.lock();
         try{
             while(resultBuffer.isEmpty()){
-                if(resultBuffer.isEmpty()){
-                    bufferEmpty.await();
-                }
-                else{
-                    m = resultBuffer.remove();
-                    break;
-                }
+                bufferEmpty.await();
             }
+            m = resultBuffer.remove();
         }
         finally{
             lock.unlock();

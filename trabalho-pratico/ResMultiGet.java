@@ -18,8 +18,9 @@ public class ResMultiGet implements Message {
             out.writeInt(values.size());
             for(Map.Entry<String,byte[]> entry : values.entrySet()){
                 out.writeUTF(entry.getKey());
-                out.writeInt(entry.getValue().length);  
-                out.write(entry.getValue());
+                byte[] value = entry.getValue();
+                out.writeInt(value.length);  
+                out.write(value, 0, value.length);
             }
         } catch (IOException e) {
         }
@@ -33,7 +34,7 @@ public class ResMultiGet implements Message {
                 String key = in.readUTF();
                 int tamanho = in.readInt();
                 byte[] value = new byte[tamanho];
-                in.readFully(value);
+                in.read(value, 0, tamanho);
                 res.put(key, value);
             }
             return new ResMultiGet(res);

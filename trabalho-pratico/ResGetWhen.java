@@ -12,7 +12,7 @@ public class ResGetWhen implements Message {
     public void serialize(DataOutputStream out) throws IOException{
         try {
             out.writeInt(value.length);  
-            out.write(value);
+            out.write(value, 0, value.length);
         } catch (IOException e) {
         }
     }
@@ -21,7 +21,7 @@ public class ResGetWhen implements Message {
         try{
             int tamanho=in.readInt();
             byte[] resposta=new byte[tamanho];
-            in.readFully(resposta);
+            in.read(resposta, 0, tamanho);
             return new ResGetWhen(resposta);
         }catch (IOException e){
             return null;

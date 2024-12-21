@@ -14,16 +14,12 @@ public class RequestBuffer{
         lock.lock();
         try{
             while(requestBuffer.size()==BUFFER_SIZE){
-                if(requestBuffer.size()==BUFFER_SIZE){
-                    bufferFull.await();
-                }
-                else{
-                    requestBuffer.add(r);
-                    bufferEmpty.signalAll();
-                    break;
-                }
+                bufferFull.await();
             }
-        } catch (Exception ignore) { }
+            requestBuffer.add(r);
+            bufferEmpty.signalAll();
+        } 
+        catch (Exception ignore) { }
         finally{
             lock.unlock();
         }
@@ -34,16 +30,12 @@ public class RequestBuffer{
         lock.lock();
         try{
             while(requestBuffer.isEmpty()){
-                if(requestBuffer.isEmpty()){
-                    bufferEmpty.await();
-                }
-                else{
-                    r = requestBuffer.remove();
-                    bufferFull.signalAll();
-                    break;
-                }
+                bufferEmpty.await();
             }
-        } catch (Exception ignore) { }
+            r = requestBuffer.remove();
+            bufferFull.signalAll();
+        } 
+        catch (Exception ignore) { }
         finally{
             lock.unlock();
         }

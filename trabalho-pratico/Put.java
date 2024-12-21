@@ -25,8 +25,7 @@ public class Put implements Message {
             out.writeUTF(tipo);
             out.writeUTF(key);
             out.writeInt(this.value.length);
-            out.write(value);
-            out.flush();
+            out.write(value, 0, value.length);
         }catch (IOException e){
             throw new IOException(e);
         }
@@ -41,7 +40,7 @@ public class Put implements Message {
         int tamanho=in.readInt();
 
         byte[] value=new byte[tamanho];
-        in.readFully(value);
+        in.read(value, 0, tamanho);
         
         return new Put(chave,value);
     }catch (IOException e){

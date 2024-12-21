@@ -29,7 +29,7 @@ public class GetWhen implements Message {
         out.writeUTF(key);
         out.writeUTF(keyCond);
         out.writeInt(valueCond.length);
-        out.write(valueCond);
+        out.write(valueCond, 0, valueCond.length);
     }
 
     public Message deserialize(DataInputStream in) throws IOException {
@@ -37,7 +37,7 @@ public class GetWhen implements Message {
         String keyCond = in.readUTF();
         int length = in.readInt();
         byte[] valueCond = new byte[length];
-        in.readFully(valueCond); //ou read nsei
+        in.read(valueCond, 0, length);
         return new GetWhen(key,keyCond,valueCond);
     }
 }
