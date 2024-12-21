@@ -23,15 +23,11 @@ class ClientsMap{
         lock.writeLock().lock();
         try{
             while(clients.size()==S){
-                if(clients.size()==S){
                     isFull.await();
-                }
-                else{
-                    this.clients.put(id, results);
-                    break;
-                }
             }
-        } catch (Exception ignore) { }
+            this.clients.put(id, results);
+        } 
+        catch (Exception ignore) { }
         finally{
             lock.writeLock().unlock();
         }
