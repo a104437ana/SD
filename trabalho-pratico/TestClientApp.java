@@ -22,7 +22,8 @@ public class TestClientApp {
 
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            String key = Long.toString(rand.nextLong(ops));
+            //String key = Long.toString(rand.nextLong(ops));
+            String key = Long.toString(Math.abs(rand.nextLong() % ops));
             ///////////////////// Apenas para testar /////////////////////
             try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
             catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -60,7 +61,8 @@ public class TestClientApp {
         // Falta 99% dos acessos em 1% do dataset
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            String key = Long.toString(rand.nextLong(ops));
+            //String key = Long.toString(rand.nextLong(ops));
+            String key = Long.toString(Math.abs(rand.nextLong() % ops));
             ///////////////////// Apenas para testar /////////////////////
             try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
             catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -103,7 +105,8 @@ public class TestClientApp {
             boolean isPut = r < ratio ? true : false;
             // Put
             if (isPut) {
-                key = Long.toString(rand.nextLong(ops));
+                //key = Long.toString(rand.nextLong(ops));
+                key = Long.toString(Math.abs(rand.nextLong() % ops));
                 ///////////////////// Apenas para testar /////////////////////
                 try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
                 catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -112,7 +115,8 @@ public class TestClientApp {
             }
             // Get
             else {
-                key = Long.toString(rand.nextLong(ops));
+                //key = Long.toString(rand.nextLong(ops));
+                key = Long.toString(Math.abs(rand.nextLong() % ops));
                 ///////////////////// Apenas para testar /////////////////////
                 try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
                 catch (InterruptedException e) { e.printStackTrace(); }   ////

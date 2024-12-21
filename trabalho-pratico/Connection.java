@@ -18,8 +18,6 @@ public class Connection {
     private ReentrantLock lockIn;    
     private DataOutputStream out;
     private ReentrantLock lockOut;
-    private ResultBuffer results;
-    private RequestBuffer requests;
 
     /**
      * Construtor parametrizado que cria um objeto Connection
@@ -34,8 +32,6 @@ public class Connection {
         this.lockIn = new ReentrantLock();
         this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
         this.lockOut = new ReentrantLock();
-        this.results=new ResultBuffer();
-        this.requests=new RequestBuffer();
     }
 
     /**
@@ -57,7 +53,7 @@ public class Connection {
      * por tcp, a qual a socket se encontra conectada
      * @param m
      */
-    public void send(Message m)  throws IOException{
+    public void send(Message m) {
         lockOut.lock();
             try {
                 m.serialize(out);
@@ -73,7 +69,7 @@ public class Connection {
      * por tcp, a qual a socket se encontra conectada
      * @return
      */
-    public Message receive(String id) throws IOException {
+    public Message receive() {
         lockIn.lock();
         try{
             String tipo = in.readUTF();
@@ -81,62 +77,42 @@ public class Connection {
             switch (tipo) {
                 case "Put":
                     message = Put.deserialize(in);
-                    Request request=new Request(id, message);
-                    requests.queue(request);
                     return message;
                 case "ResPut":
                     message = ResPut.deserialize(in);
-                    results.queue(message);
                     return message;  
                 case "Get":
                     message = Get.deserialize(in);
-                    Request request2=new Request(id, message);
-                    requests.queue(request2);
                     return message;
                 case "ResGet":
                     message = ResGet.deserialize(in);
-                    results.queue(message);
                     return message; 
                 case "MultiPut":
-                    message = MultiPut.deserialize(in);
-                    Request request3=new Request(id, message);
-                    requests.queue(request3);                      
+                    message = MultiPut.deserialize(in);                    
                     return message; 
                 case "ResMultiPut":
                     message = ResMultiPut.deserialize(in);
-                    results.queue(message);
                     return message;
                 case "MultiGet":
-                    message = MultiGet.deserialize(in);
-                    Request request4=new Request(id, message);
-                    requests.queue(request4);           
+                    message = MultiGet.deserialize(in);         
                     return message;
                 case "ResMultiGet":
                     message = ResMultiGet.deserialize(in);
-                    results.queue(message);
                     return message;
                 case "Exit":
                     message = Exit.deserialize(in);
-                    Request request5=new Request(id, message);
-                    requests.queue(request5);
                     return message;
                 case "Login":
                     message = Login.deserialize(in);
-                    Request request6=new Request(id, message);
-                    requests.queue(request6);
                     return message;
                 case "ResLogin":
                     message = ResLogin.deserialize(in);
-                    results.queue(message);
                     return message;
                 case "Register":
-                    message = Register.deserialize(in);
-                    Request request7=new Request(id, message);
-                    requests.queue(request7);                    
+                    message = Register.deserialize(in);                  
                     return message;
                 case "ResRegister":
                     message = ResRegister.deserialize(in);
-                    results.queue(message);
                     return message;
 
             }
