@@ -43,10 +43,7 @@ public class ClientSingleThread implements Client {
      */
     public void put(String key, byte[] value){
         Put put=new Put(key, value);
-        try {
-            connection.send(put);
-        } catch (IOException e) {
-        }
+        connection.send(put);
     }
 
     /**
@@ -57,10 +54,7 @@ public class ClientSingleThread implements Client {
      */
     public byte[] get(String key) { 
         Get g=new Get(key);
-        try {
-            connection.send(g); //envia a mensagem
-        } catch (IOException e) {
-        }
+        connection.send(g); //envia a mensagem
         //procura a resposta
         
 
@@ -74,10 +68,7 @@ public class ClientSingleThread implements Client {
      */
     public void multiPut(Map<String,byte[]> pairs) {
         MultiPut mp=new MultiPut(pairs);
-        try {
             connection.send(mp);
-        } catch (IOException e) {
-        }
     }
 
     /**
