@@ -30,4 +30,8 @@ public class ResGet implements Message {
             return null;
         }
     }
+
+    public byte[] getValue() {
+        return this.value.clone();
+    }
 }

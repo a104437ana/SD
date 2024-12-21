@@ -22,6 +22,14 @@ public class ClientSingleThread implements Client {
      * @return true - sucesso / false - insucesso
      */
     public boolean register(String user, String password) {
+        Register r=new Register(user,password);
+        connection.send(r); //envia a mensagem
+        //procura a resposta
+        Message response=connection.receive();
+        if (response instanceof ResRegister) {
+            ResRegister res = (ResRegister) response;
+            return res.getValue();
+        }
         return false;
     }
 
@@ -32,8 +40,16 @@ public class ClientSingleThread implements Client {
      * @return true - sucesso / false - insucesso
      */
     public boolean authenticate(String user, String password) {
-        return false;
-    }
+        Login r=new Login(user,password);
+        connection.send(r); //envia a mensagem
+        //procura a resposta
+        Message response=connection.receive();
+        if (response instanceof ResLogin) {
+            ResLogin res = (ResLogin) response;
+            return res.getValue();
+        }
+        return false;    
+        }
 
 
     /**
@@ -45,6 +61,7 @@ public class ClientSingleThread implements Client {
     public void put(String key, byte[] value){
         Put put=new Put(key, value);
         connection.send(put);
+
     }
 
     /**
@@ -57,9 +74,12 @@ public class ClientSingleThread implements Client {
         Get g=new Get(key);
         connection.send(g); //envia a mensagem
         //procura a resposta
-        
-
-        
+        Message response=connection.receive();
+        if (response instanceof ResGet) {
+            ResGet res = (ResGet) response;
+            return res.getValue();
+        }
+        return null;
     }
 
     /**
@@ -70,18 +90,29 @@ public class ClientSingleThread implements Client {
     public void multiPut(Map<String,byte[]> pairs) {
         MultiPut mp=new MultiPut(pairs);
             connection.send(mp);
+            Message response=connection.receive();
+            if (response instanceof MultiPut) {
+                MultiPut res = (MultiPut) response;
+                //return res.getPairs();
+        }
     }
-
     /**
      * Método permite a um cliente, depois de autenticado,
      * aceder a uma série de arrays binários guardados anteriormente na base de dados do servidor
      * @param keys
      * @return
      */
-    public Map<String,byte[]> multiGet(Set<String> keys) {
+    public ResMultiGet multiGet(Set<String> keys) {
+        MultiGet g=new MultiGet(keys);
+        connection.send(g); //envia a mensagem
+        //procura a resposta
+        Message response=connection.receive();
+        if (response instanceof ResMultiGet) {
+            ResMultiGet res = (ResMultiGet) response;
+            return res;
+        }
         return null;
     }
-
 
     /**
      * Método permite a um cliente, depois de autenticado,

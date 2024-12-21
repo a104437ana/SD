@@ -25,4 +25,8 @@ public class ResRegister implements Message {
         boolean sucess = in.readBoolean();
         return new ResRegister(sucess);
     }
+
+    public boolean getValue() {
+        return sucessfull;
+    }
 }

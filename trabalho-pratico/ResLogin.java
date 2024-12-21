@@ -24,4 +24,9 @@ public class ResLogin implements Message {
         boolean sucess = in.readBoolean();
         return new ResLogin(sucess);
     }
+
+
+    public boolean getValue() {
+        return sucessfull;
+    }
 }
