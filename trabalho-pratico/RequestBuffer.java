@@ -17,7 +17,7 @@ public class RequestBuffer{
                 bufferFull.await();
             }
             requestBuffer.add(r);
-            bufferEmpty.signalAll();
+            bufferEmpty.signal();
         } 
         catch (Exception ignore) { }
         finally{
@@ -33,7 +33,7 @@ public class RequestBuffer{
                 bufferEmpty.await();
             }
             r = requestBuffer.remove();
-            bufferFull.signalAll();
+            bufferFull.signal();
         } 
         catch (Exception ignore) { }
         finally{

@@ -12,6 +12,7 @@ public class ResultBuffer{
         lock.lock();
         try{
             resultBuffer.add(m);
+            bufferEmpty.signal();
         }
         finally{
             lock.unlock();
