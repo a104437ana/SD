@@ -6,13 +6,15 @@ import java.util.Map;
 
 public class MultiPut implements Message{
     Map<String, byte[]> pairs;
-    
+    private String tipo="Multiput";
+
         public MultiPut(Map<String, byte[]> pairs){
         this.pairs=pairs;
     }
 
         @Override
         public void serialize(DataOutputStream out) throws IOException {
+            out.writeUTF(tipo);
             out.writeInt(pairs.size());//tamanho do nosso map
             for(Map.Entry<String , byte[] > entry: pairs.entrySet()){
                 String s=entry.getKey();

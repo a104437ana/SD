@@ -5,6 +5,8 @@ import java.io.IOException;
 public class Login implements Message {
     private String id;
     private String password;
+    private String tipo="Login";
+
 
     public Login(String id, String password) {
         this.id = id;
@@ -20,11 +22,12 @@ public class Login implements Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
+        out.writeUTF(tipo);
         out.writeUTF(id);
         out.writeUTF(password);
     }
 
-    public Message deserialize(DataInputStream in) throws IOException {
+    public static Message deserialize(DataInputStream in) throws IOException {
         String id = in.readUTF();
         String password = in.readUTF();
         return new Login(id, password);

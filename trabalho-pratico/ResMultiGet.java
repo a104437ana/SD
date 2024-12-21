@@ -6,13 +6,15 @@ import java.util.Map;
 
 public class ResMultiGet implements Message {
     Map<String, byte[]> values;  
-    
+    private String tipo="ResMultiGet";
+
     public ResMultiGet(Map<String, byte[]> res){
         this.values=res;
     }
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
+            out.writeUTF(tipo);
             out.writeInt(values.size());
             for(Map.Entry<String,byte[]> entry : values.entrySet()){
                 out.writeUTF(entry.getKey());
@@ -23,7 +25,7 @@ public class ResMultiGet implements Message {
         }
     }
 
-    public Message deserialize(DataInputStream in)throws IOException {
+    public static Message deserialize(DataInputStream in)throws IOException {
         try{
             int entries = in.readInt();
             Map<String, byte[]> res = new HashMap<String,byte[]>(entries);

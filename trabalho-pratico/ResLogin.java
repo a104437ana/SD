@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class ResLogin implements Message {
     private boolean sucessfull;
+    private String tipo="ResLogin";
 
     public ResLogin(boolean sucessfull) {
         this.sucessfull = sucessfull;
@@ -15,10 +16,11 @@ public class ResLogin implements Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
+        out.writeUTF(tipo);
         out.writeBoolean(sucessfull);
     }
 
-    public Message deserialize(DataInputStream in) throws IOException {
+    public static Message deserialize(DataInputStream in) throws IOException {
         boolean sucess = in.readBoolean();
         return new ResLogin(sucess);
     }

@@ -4,6 +4,8 @@ import java.io.IOException;
 
 public class ResGet implements Message {
     byte[] value;    
+    private String tipo="ResGet";
+
     
     public ResGet(byte[] value){
         this.value=value;
@@ -11,13 +13,14 @@ public class ResGet implements Message {
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
+            out.writeUTF(tipo);
             out.writeInt(value.length);
             out.write(value, 0, value.length);
         } catch (IOException e) {
         }
     }
 
-    public Message deserialize(DataInputStream in)throws IOException {
+    public static Message deserialize(DataInputStream in)throws IOException {
         try{
             int tamanho=in.readInt();
             byte[] resposta=new byte[tamanho];

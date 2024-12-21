@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class Exit implements Message {
     private String id;
+    private String tipo="Exit";
 
     public Exit(String id) {
         this.id = id;
@@ -14,10 +15,11 @@ public class Exit implements Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
+        out.writeUTF(tipo);
         out.writeUTF(id);
     }
 
-    public Message deserialize(DataInputStream in) throws IOException {
+    public static Message deserialize(DataInputStream in) throws IOException {
         String id = in.readUTF();
         return new Exit(id);
     }
