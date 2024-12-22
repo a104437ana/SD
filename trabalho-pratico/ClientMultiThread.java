@@ -69,11 +69,9 @@ public class ClientMultiThread implements Client {
         Buffer buffer = getBuffer(id);
         Message message = new Put(key, value);
         message.setId(id);
-        System.out.println("Enviado put com id " + id);
         requestBuffer.queue(message);
         try {
             Message res = (Message) buffer.unqueue();
-            System.out.println("Recebida mensagem " + res.getClass().getSimpleName());
             if (res instanceof ResPut) {
                 Message result = (ResPut) res;
                 if (result != null) ;
@@ -172,15 +170,8 @@ public class ClientMultiThread implements Client {
         try {
             Message message = new Exit(userId);
             requestBuffer.queue(message);
-            try {
-                System.out.println("A fazer logout"); //
-                authenticated = false;
-                while (!exited) condition.await();
-                System.out.println("Logout efetuado"); //
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            authenticated = false;
+//            while (!exited) condition.await();
             dispatcher.close();
             connection.close();
         }
@@ -212,12 +203,10 @@ public class ClientMultiThread implements Client {
                 while (!Thread.interrupted()) {
                     try {
                         Message message = (Message) requestBuffer.unqueue();
-                        System.out.println("A enviar mensagem " + message.getClass().getSimpleName()); //
                         connection.send(message);
                         if (message instanceof Exit) {
-                            System.out.println("Enviado exit"); //
                             exited = true;
-                            condition.signalAll();
+//                            condition.signalAll();
                         }
                     }
                     catch (InterruptedException e) {

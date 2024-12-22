@@ -185,10 +185,9 @@ class RequestThread implements Runnable{
     }
     public void run(){ //trocar para alguma condição
         while(true){
-            System.out.println("A fazer unqueue de um request");
             Request r = requests.unqueue();
             Message m = r.getMessage();
-            System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
+//            System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
             Message res = processMessage(m);
             cli.queueResult(r.getId(), res);
         }
@@ -265,8 +264,8 @@ class RequestThread implements Runnable{
         Method m = null;
         Message msg = null;
         try {
-            m = getClass().getMethod("processMessage", message.getClass());
-            msg = (Message) m.invoke(getClass(), message);
+            m = getClass().getDeclaredMethod("processMessage", message.getClass());
+            msg = (Message) m.invoke(this, message);
         }
         catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
