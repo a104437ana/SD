@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -14,14 +13,8 @@ public class ClientApp {
     private Scanner in;
     
     public ClientApp(boolean singleThread) {
-        try {
-            if (singleThread) this.client = new ClientSingleThread();
-            else this.client = new ClientMultiThread();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            Menu.pressEnterToContinue();
-        }
+        if (singleThread) this.client = new ClientSingleThread();
+        else this.client = new ClientMultiThread();
         this.AUTHENTICATED = false;
         this.menus = new HashMap<>();
         this.in = new Scanner(System.in);
@@ -60,6 +53,7 @@ public class ClientApp {
             System.out.println("Autenticado com sucesso");
             Menu.pressEnterToContinue();
             menuInicial();
+            client.logout();
         }
         else {
             System.out.println("Autenticação falhou");

@@ -60,4 +60,7 @@ public interface Client {
      * @return
      */
     public byte[] getWhen(String key, String keyCond, byte[] valueCond);
+
+
+    public void logout();
 }

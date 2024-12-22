@@ -13,11 +13,7 @@ public class ClientMultiThread implements Client {
     private Map<Long,Buffer> resultBuffer = new HashMap<Long,Buffer>();
     private Connection connection;
     private Dispatcher dispatcher = new Dispatcher();
-
-    public ClientMultiThread() throws IOException, UnknownHostException {
-        InetAddress ip = InetAddress.getByName("localhost");
-        this.connection = new Connection(ip,10000);
-    }
+    private String userId;
 
     public boolean register(String user, String password) {
         lock.lock();
@@ -39,6 +35,13 @@ public class ClientMultiThread implements Client {
     public boolean authenticate(String user, String password) {
         lock.lock();
         try {
+            try {
+                InetAddress ip = InetAddress.getByName("localhost");
+                connection = new Connection(ip,10000);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
             Message message = new Login(user, password);
             connection.send(message);
             Message res = connection.receive();
@@ -48,7 +51,11 @@ public class ClientMultiThread implements Client {
                 sucessfull = result.getResult();
                 if (sucessfull) {
                     authenticated = true;
+                    userId = user;
                     dispatcher.run();
+                }
+                else {
+                    connection.close();
                 }
             }
             return sucessfull;
@@ -159,6 +166,20 @@ public class ClientMultiThread implements Client {
         return value;
     }
 
+    public void logout() {
+        lock.lock();
+        try {
+            Message message = new Exit(userId);
+            requestBuffer.queue(message);
+            authenticated = false;
+            dispatcher.close();
+            connection.close();
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
     private Buffer getBuffer(long id) {
         Buffer buffer = resultBuffer.get(id);
         if (buffer == null) {
@@ -166,12 +187,6 @@ public class ClientMultiThread implements Client {
             resultBuffer.put(id,buffer);
         }
         return buffer;
-    }
-
-    public void close() {
-        authenticated = false;
-        dispatcher.close();
-        connection.close();
     }
 
     class Dispatcher {
