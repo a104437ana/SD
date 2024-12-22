@@ -47,7 +47,7 @@ public interface Client {
      * @param keys
      * @return
      */
-    public ResMultiGet multiGet(Set<String> keys);
+    public Map<String,byte[]> multiGet(Set<String> keys);
 
 
     /**

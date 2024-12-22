@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ResMultiGet implements Message {
+public class ResMultiGet extends Message {
     Map<String, byte[]> values;  
     private String tipo="ResMultiGet";
 
@@ -15,6 +15,7 @@ public class ResMultiGet implements Message {
     public void serialize(DataOutputStream out) throws IOException{
         try {
             out.writeUTF(tipo);
+            out.writeLong(this.getId());
             out.writeInt(values.size());
             for(Map.Entry<String,byte[]> entry : values.entrySet()){
                 out.writeUTF(entry.getKey());
@@ -28,6 +29,7 @@ public class ResMultiGet implements Message {
 
     public static Message deserialize(DataInputStream in)throws IOException {
         try{
+            Long id = in.readLong();
             int entries = in.readInt();
             Map<String, byte[]> res = new HashMap<String,byte[]>(entries);
             for(int i = 0; i<entries; i++){
@@ -37,9 +39,24 @@ public class ResMultiGet implements Message {
                 in.read(value, 0, tamanho);
                 res.put(key, value);
             }
-            return new ResMultiGet(res);
+            ResMultiGet resMultiGet = new ResMultiGet(res);
+            resMultiGet.setId(id);
+            return resMultiGet;
         }catch (IOException e){
             return null;
         }
+    }
+
+    public Map<String,byte[]> getPairs() {
+        Map<String,byte[]> pairsMap = new HashMap<>();
+        for (Map.Entry<String,byte[]> e : values.entrySet()) {
+            byte[] v = e.getValue();
+            byte[] value = new byte[v.length];
+            for (int i = 0; i < v.length; i++) {
+                value[i] = v[i];
+            }
+            pairsMap.put(e.getKey(), value);
+        }
+        return pairsMap;
     }
 }

@@ -77,6 +77,7 @@ public class Menu {
 
         System.out.print("Opção : ");
         try {
+            while (!in.hasNextLine()) {}
             String line = in.nextLine();
             op = Integer.parseInt(line);
         }

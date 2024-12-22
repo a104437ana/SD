@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ResRegister implements Message {
+public class ResRegister extends Message {
     private boolean sucessfull;
     private String tipo="ResRegister";
 
@@ -26,7 +26,7 @@ public class ResRegister implements Message {
         return new ResRegister(sucess);
     }
 
-    public boolean getValue() {
+    public boolean getResult() {
         return sucessfull;
     }
 }

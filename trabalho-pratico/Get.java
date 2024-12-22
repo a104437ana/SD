@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Get implements Message {
+public class Get extends Message {
     private String key;
     private String tipo="Get";
 
@@ -17,11 +17,15 @@ public class Get implements Message {
 
     public void serialize(DataOutputStream out) throws IOException {
         out.writeUTF(tipo);
+        out.writeLong(this.getId());
         out.writeUTF(key);
     }
 
-    public static Get deserialize(DataInputStream in) throws IOException {
+    public static Message deserialize(DataInputStream in) throws IOException {
+        Long id = in.readLong();
         String key = in.readUTF();
-        return new Get(key);
+        Get get = new Get(key);
+        get.setId(id);
+        return get;
     }
 }

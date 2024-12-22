@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MultiPut implements Message{
+public class MultiPut extends Message{
     Map<String, byte[]> pairs;
     private String tipo="Multiput";
 
@@ -15,28 +15,33 @@ public class MultiPut implements Message{
         @Override
         public void serialize(DataOutputStream out) throws IOException {
             out.writeUTF(tipo);
+            out.writeLong(this.getId());
             out.writeInt(pairs.size());//tamanho do nosso map
             for(Map.Entry<String , byte[] > entry: pairs.entrySet()){
                 String s=entry.getKey();
                 byte[] b= entry.getValue();
-                
-                Put message=new Put(s,b);
 
-                message.serialize(out);
+                out.writeUTF(s);
+                out.writeInt(b.length);
+                out.write(b, 0, b.length);
             }   
         }
 
         public static Message deserialize(DataInputStream in) throws IOException{
             try {
+               Long id = in.readLong();
                int size= in.readInt();
                Map<String, byte[]> pares=new HashMap<>();
                for(int i=0;i<size;i++){
-                Put message=Put.deserialize(in);
-                String chave=message.getKey();
-                byte[] b=message.getValue();
+                String chave=in.readUTF();
+                int s = in.readInt();
+                byte[] b = new byte[s];
+                in.read(b, 0, s);
                 pares.put(chave, b);
                }
-               return new MultiPut(pares);
+               MultiPut multiPut = new MultiPut(pares);
+               multiPut.setId(id);
+               return multiPut;
             } catch (IOException e) {
                 return null;
             }

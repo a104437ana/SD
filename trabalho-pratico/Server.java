@@ -198,6 +198,7 @@ class RequestThread implements Runnable{
     private Message processMessage(Get message) {
         byte[] value = dataBase.get(message.getKey());
         Message res = new ResGet(value);
+        res.setId(message.getId());
         return res;
     }
 
@@ -209,6 +210,7 @@ class RequestThread implements Runnable{
         boolean success = true;
         dataBase.put(message.getKey(), message.getValue()); // Alterar, método deve retornar um booleano ou dar trow de exception
         Message res = new ResPut(success);
+        res.setId(message.getId());
         return res;
     }
 
@@ -219,6 +221,7 @@ class RequestThread implements Runnable{
     private Message processMessage(MultiGet message) {
         Map<String,byte[]> pairs = dataBase.multiGet(message.getKeys());
         Message res = new ResMultiGet(pairs);
+        res.setId(message.getId());
         return res;
     }
 
@@ -230,6 +233,7 @@ class RequestThread implements Runnable{
         boolean success = true;
         dataBase.multiPut(message.getPairs()); // Alterar, método deve retornar um booleano ou dar trow de exception
         Message res = new ResMultiPut(success);
+        res.setId(message.getId());
         return res;
     }
 
@@ -246,6 +250,7 @@ class RequestThread implements Runnable{
             e.printStackTrace();
         }
         Message res = new ResGetWhen(value);
+        res.setId(message.getId());
         return res;
     }
 
@@ -278,9 +283,12 @@ class ThreadPool{
     public ThreadPool(ClientsMap map, RequestBuffer requests, ArmazemDadosPartilhados dataBase){
         this.clients = map;
         this.requestBuffer = requests;
+        System.out.println("A criar " + THREAD_POOL_SIZE + " threads"); // Para apagar
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
             threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients, dataBase));
+            System.out.println("Criada thread " + i); // Para apagar
             threadPool[i].run();
+            System.out.println("Iniciada thread " + i); // Para apagar
         }
     }
 }
@@ -294,10 +302,13 @@ public class Server {
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
         RequestBuffer messages = new RequestBuffer();
+        System.out.println("Inicializar thread pool"); // Para apagar
         ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
+        System.out.println("Thread pool acabou"); // Para apagar
 
         try{
-            ServerSocket ss = new ServerSocket(10000);
+            ServerSocket ss = new ServerSocket(10001);
+            System.out.println("Server conectado na porta " + ss.getLocalPort()); // Para apagar
             boolean server_open = true;
             while(server_open) {
                 Socket s = ss.accept();

@@ -1,18 +1,18 @@
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.Socket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientSingleThread implements Client {
-    Socket socket;
     Connection connection;
     //Cliente id;
 
-    public ClientSingleThread(Socket socket) throws IOException{
-        this.socket=socket;
-        this.connection=new Connection(socket);
+    public ClientSingleThread() throws IOException, UnknownHostException{
+        InetAddress ip = InetAddress.getByName("localhost");
+        this.connection=new Connection(ip,10000);
     }
 
     /**
@@ -28,7 +28,7 @@ public class ClientSingleThread implements Client {
         Message response=connection.receive();
         if (response instanceof ResRegister) {
             ResRegister res = (ResRegister) response;
-            return res.getValue();
+            return res.getResult();
         }
         return false;
     }
@@ -46,7 +46,7 @@ public class ClientSingleThread implements Client {
         Message response=connection.receive();
         if (response instanceof ResLogin) {
             ResLogin res = (ResLogin) response;
-            return res.getValue();
+            return res.getResult();
         }
         return false;    
         }
@@ -102,14 +102,14 @@ public class ClientSingleThread implements Client {
      * @param keys
      * @return
      */
-    public ResMultiGet multiGet(Set<String> keys) {
+    public Map<String,byte[]> multiGet(Set<String> keys) {
         MultiGet g=new MultiGet(keys);
         connection.send(g); //envia a mensagem
         //procura a resposta
         Message response=connection.receive();
         if (response instanceof ResMultiGet) {
             ResMultiGet res = (ResMultiGet) response;
-            return res;
+            return res.getPairs();
         }
         return null;
     }

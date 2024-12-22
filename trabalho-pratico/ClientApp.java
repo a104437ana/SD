@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,8 +14,14 @@ public class ClientApp {
     private Scanner in;
     
     public ClientApp(boolean singleThread) {
-        if (singleThread) this.client = new ClientSingleThread();
-        else this.client = new ClientMultiThread();
+        try {
+            if (singleThread) this.client = new ClientSingleThread();
+            else this.client = new ClientMultiThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            Menu.pressEnterToContinue();
+        }
         this.AUTHENTICATED = false;
         this.menus = new HashMap<>();
         this.in = new Scanner(System.in);
@@ -39,8 +46,8 @@ public class ClientApp {
         String userName = in.nextLine();
         System.out.print("Password : ");
         String password = in.nextLine();
-        AUTHENTICATED = true;
-//        AUTHENTICATED = client.authenticate(userName, password);
+//        AUTHENTICATED = true;
+        AUTHENTICATED = client.authenticate(userName, password);
         if (AUTHENTICATED) {
             String[] menuInicialOps = new String[] {"Get", "Put", "MultiGet", "MultiPut", "GetWhen"};
             Menu menuInicial = new Menu("Menu Inicial - Autenticado", menuInicialOps);
@@ -52,8 +59,12 @@ public class ClientApp {
             this.menus.put("inicial", menuInicial);
             System.out.println("Autenticado com sucesso");
             Menu.pressEnterToContinue();
+            menuInicial();
         }
-        menuInicial();
+        else {
+            System.out.println("Autenticação falhou");
+            Menu.pressEnterToContinue();
+        }
     }
 
     private void menuRegistar() {
@@ -63,10 +74,14 @@ public class ClientApp {
         String userName = in.nextLine();
         System.out.print("Password : ");
         String password = in.nextLine();
-        boolean registed = true;
-//        boolean registed = client.register(userName, password);
+//        boolean registed = true;
+        boolean registed = client.register(userName, password);
         if (registed) {
             System.out.println("Registado com sucesso");
+            Menu.pressEnterToContinue();
+        }
+        else {
+            System.out.println("Registo Falhou");
             Menu.pressEnterToContinue();
         }
     }
@@ -76,11 +91,15 @@ public class ClientApp {
         System.out.println("\n --- Menu Get --- ");
         System.out.print("Get key : ");
         String key = in.nextLine();
-        byte[] value = new byte[10];
-//        byte[] value = client.get(key);
+//        byte[] value = new byte[10];
+        byte[] value = client.get(key);
         // Falta alterar para mostrar o value, para ficheiro ou no ecrã
         if (value != null) {
             System.out.println("Get efetuado com sucesso");
+            Menu.pressEnterToContinue();
+        }
+        else {
+            System.out.println("Get Falhou");
             Menu.pressEnterToContinue();
         }
     }
@@ -93,7 +112,7 @@ public class ClientApp {
         System.out.print("Put value : ");
         // Talvez alterar para ter a opção de enviar um ficheiro
         byte[] value = in.nextLine().getBytes();
-//        client.put(key, value);
+        client.put(key, value);
         System.out.println("Put efetuado com sucesso");
         Menu.pressEnterToContinue();
     }
@@ -138,6 +157,10 @@ public class ClientApp {
 //        Map<String,byte[]> pairs = client.multiGet(keys);
         if (pairs.size() == numberOfPairs) {
             System.out.println("MultiGet efetuado com sucesso");
+            Menu.pressEnterToContinue();
+        }
+        else {
+            System.out.println("MultiGet Falhou");
             Menu.pressEnterToContinue();
         }
     }

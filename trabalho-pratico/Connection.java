@@ -99,6 +99,12 @@ public class Connection {
                 case "ResMultiGet":
                     message = ResMultiGet.deserialize(in);
                     return message;
+                case "GetWhen":
+                    message = GetWhen.deserialize(in);         
+                    return message;
+                case "ResGetWhen":
+                    message = ResGetWhen.deserialize(in);
+                    return message;
                 case "Exit":
                     message = Exit.deserialize(in);
                     return message;

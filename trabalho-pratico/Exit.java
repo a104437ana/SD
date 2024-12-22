@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Exit implements Message {
+public class Exit extends Message {
     private String id;
     private String tipo="Exit";
 

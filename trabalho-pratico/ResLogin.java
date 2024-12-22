@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ResLogin implements Message {
+public class ResLogin extends Message {
     private boolean sucessfull;
     private String tipo="ResLogin";
 
@@ -25,8 +25,7 @@ public class ResLogin implements Message {
         return new ResLogin(sucess);
     }
 
-
-    public boolean getValue() {
+    public boolean getResult() {
         return sucessfull;
     }
 }

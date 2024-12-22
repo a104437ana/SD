@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Put implements Message {
+public class Put extends Message {
     private String tipo="Put";
     private String key;
     private byte[] value;
@@ -23,6 +23,7 @@ public class Put implements Message {
     public void serialize(DataOutputStream out) throws IOException{
         try{
             out.writeUTF(tipo);
+            out.writeLong(this.getId());
             out.writeUTF(key);
             out.writeInt(this.value.length);
             out.write(value, 0, value.length);
@@ -35,14 +36,17 @@ public class Put implements Message {
     public static Put deserialize(DataInputStream in) throws IOException{
         
         try{
+        Long id = in.readLong();
         String chave=in.readUTF();
 
         int tamanho=in.readInt();
 
         byte[] value=new byte[tamanho];
         in.read(value, 0, tamanho);
-        
-        return new Put(chave,value);
+
+        Put put = new Put(chave, value);
+        put.setId(id);
+        return put;
     }catch (IOException e){
         throw new IOException(e);
     }

@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Login implements Message {
+public class Login extends Message {
     private String id;
     private String password;
     private String tipo="Login";
