@@ -303,11 +303,13 @@ public class Server {
             catch(NumberFormatException e){
                 System.out.println("Argumento inválido");
                 System.out.println("  Insira o nº máximo de clientes simultâneos");
+                return;
             }
         }
         else {
             System.out.println("Número de argumentos inválido");
             System.out.println("  java Server <nº máximo de clientes simultâneos>");
+            return;
         }
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
