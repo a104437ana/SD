@@ -290,12 +290,24 @@ class ThreadPool{
     }
 }
 
-public class Server {
-    private final static int S = 10;
+public class Server {        
     private static ArmazemDadosPartilhados dataBase = new ArmazemDadosPartilhados();
-
     public static void main(String[] args){
-
+        int S = 1;
+        if (args.length > 0) {
+            String arg = args[0];
+            try{
+                S=Integer.parseInt(arg);
+            }
+            catch(NumberFormatException e){
+                System.out.println("Argumento inválido");
+                System.out.println("  Insira o nº máximo de clientes simultâneos");
+            }
+        }
+        else {
+            System.out.println("Número de argumentos inválido");
+            System.out.println("  java Server <nº máximo de clientes simultâneos>");
+        }
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
         RequestBuffer messages = new RequestBuffer();
