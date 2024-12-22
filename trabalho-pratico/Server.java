@@ -130,7 +130,7 @@ class ConnectionThread implements Runnable{
             }
             if(authenticated&&connectionOpen){
                 sendResults = new Thread(new ConnectionResultsThread(connection, results));
-                sendResults.run();
+                sendResults.start();
                 while(connectionOpen){
                     Message receive = connection.receive();
                     if(receive.getClass().getSimpleName().equals("Exit")){
@@ -287,7 +287,7 @@ class ThreadPool{
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
             threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients, dataBase));
             System.out.println("Criada thread " + i); // Para apagar
-            threadPool[i].run();
+            threadPool[i].start();
             System.out.println("Iniciada thread " + i); // Para apagar
         }
     }
