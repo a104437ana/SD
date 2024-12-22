@@ -12,6 +12,10 @@ public class TestClientApp {
     private String fileName = "";
     private static final String USER = "test";
     private static final String PASSWORD = "test";
+    private static final int NUMBER_TESTS = 3;
+    private static final int GET = 0;
+    private static final int PUT = 1;
+    private static final int PUTGET = 2;
 
     private float putWorkload(long ops) {
         TestClientApp.testsStartMessage();
@@ -163,27 +167,47 @@ public class TestClientApp {
             TestClientApp.errorMessage("Número de argumentos inválido");
         }
         else {
+            int incorrectArguments = 0;
             long ops = -1;
             int ratio = -1;
+            int clients = -1;
+            boolean invalidCombination = false;
+            boolean type = false;
+            boolean[] typeTest = new boolean[NUMBER_TESTS];
             try {
-                String test = args[0];
-                if (args.length == 2) ops = Long.parseLong(args[1]);
-                else if (args.length == 3) ops = Long.parseLong(args[2]);
-                float time = -1;
-                if (test.equals("-g")) time = testClient.getWorkload(ops);
-                else if (test.equals("-p")) time = testClient.putWorkload(ops);
-                else if (test.equals("-pg") && args.length == 3) {
-                    ratio = Integer.parseInt(args[1]);
-                    if (ratio >= 0 || ratio <= 100) time = testClient.putGetWorkload(ops, ratio);
-                    else errorNumberFormat("ratio");
+                for (int i = 0; i < args.length; i++) {
+                    int test = -1;
+                    if (args[i].equals("-c")) clients = Integer.parseInt(args[++i]);
+                    else if (args[i].equals("-g")) test = GET;
+                    else if (args[i].equals("-p")) test = PUT;
+                    else if (args[i].equals("pg")) test = PUTGET;
+                    else incorrectArguments++;
+                    if (test >= 0) {
+                        typeTest[test] = true;
+                        ops = Integer.parseInt(args[++i]);
+                        if (test == PUTGET) ratio = Integer.parseInt(args[++i]);
+                        if (type == true) invalidCombination = true;
+                        else type = true;
+                    }
                 }
-                else TestClientApp.errorMessage("Argumentos inválidos");
-                String dirFileName = "./" + DIRECTORY + "/" + testClient.fileName;
-                TestClientApp.testsEndMessage(time, dirFileName);
             }
             catch (NumberFormatException e) {
-                if (ops == -1) errorNumberFormat("ops");
-                else if (ratio == -1) errorNumberFormat("ratio");
+                TestClientApp.errorMessage("Argumentos inválidos");
+                return;
+            }
+            if (incorrectArguments > 0) TestClientApp.errorMessage("Argumentos inválidos");
+            else if (invalidCombination) TestClientApp.errorMessage("Combinação de argumentos inválida");
+            else if (!type) TestClientApp.errorMessage("Tipo de workload inválido");
+            else if (ops < 0) TestClientApp.errorNumberFormat("ops");
+            else if (typeTest[PUTGET] && (ratio < 0 || ratio > 100)) TestClientApp.errorNumberFormat("ratio");
+            else {
+                if (clients <= 0) clients = 1;
+                float time = -1;
+                if (typeTest[GET]) time = testClient.getWorkload(ops);
+                else if (typeTest[PUT]) time = testClient.putWorkload(ops);
+                else if (typeTest[PUTGET]) time = testClient.putGetWorkload(ops, ratio);
+                String dirFileName = "./" + DIRECTORY + "/" + testClient.fileName;
+                TestClientApp.testsEndMessage(time, dirFileName);
             }
         }
     }
