@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,12 @@ public class TestClientApp {
 
     private float putWorkload(long ops) {
         TestClientApp.testsStartMessage();
-        Client client = new ClientSingleThread();
+        try {
+            Client client = new ClientSingleThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
@@ -43,7 +49,12 @@ public class TestClientApp {
 
     private float getWorkload(long ops) {
         TestClientApp.testsStartMessage();
-        Client client = new ClientSingleThread();
+        try {
+            Client client = new ClientSingleThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
@@ -82,7 +93,12 @@ public class TestClientApp {
 
     private float putGetWorkload(long ops, int ratio) {
         TestClientApp.testsStartMessage();
-        Client client = new ClientSingleThread();
+        try {
+            Client client = new ClientSingleThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
