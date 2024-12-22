@@ -57,6 +57,7 @@ public class Connection {
         lockOut.lock();
             try {
                 m.serialize(out);
+                out.flush();
                 
             } catch (IOException e) {
             }finally{

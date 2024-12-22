@@ -289,15 +289,9 @@ class ThreadPool{
 //        System.out.println("A criar " + THREAD_POOL_SIZE + " threads"); // Para apagar
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
             threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients, dataBase));
-<<<<<<< HEAD
-            System.out.println("Criada thread " + i); // Para apagar
-            threadPool[i].start();
-            System.out.println("Iniciada thread " + i); // Para apagar
-=======
 //            System.out.println("Criada thread " + i); // Para apagar
             threadPool[i].start();
 //            System.out.println("Iniciada thread " + i); // Para apagar
->>>>>>> f0e405b (Feitas algumas correções)
         }
     }
 }
