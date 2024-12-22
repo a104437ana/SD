@@ -106,21 +106,22 @@ public class TestClientApp {
             // Put
             if (isPut) {
                 key = Long.toString(Math.abs(rand.nextLong() % ops));
-                ///////////////////// Apenas para testar /////////////////////
-                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
-                catch (InterruptedException e) { e.printStackTrace(); }   ////
-                //////////////////////////////////////////////////////////////
-//                client.put(key, value);
+                byte[] v = new byte[VALUE_SIZE];
+//                ///////////////////// Apenas para testar /////////////////////
+//                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
+//                catch (InterruptedException e) { e.printStackTrace(); }   ////
+//                //////////////////////////////////////////////////////////////
+                client.put(key, v);
             }
             // Get
             else {
                 //key = Long.toString(rand.nextLong(ops));
                 key = Long.toString(Math.abs(rand.nextLong() % ops));
-                ///////////////////// Apenas para testar /////////////////////
-                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
-                catch (InterruptedException e) { e.printStackTrace(); }   ////
-                //////////////////////////////////////////////////////////////
-//                value = client.get(key);
+//                ///////////////////// Apenas para testar /////////////////////
+//                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
+//                catch (InterruptedException e) { e.printStackTrace(); }   ////
+//                //////////////////////////////////////////////////////////////
+                value = client.get(key);
             }
             time = System.currentTimeMillis() - time;
             String[] line = new String[] {Long.toString(i+1), Long.toString(time), key, Boolean.toString(isPut)};
