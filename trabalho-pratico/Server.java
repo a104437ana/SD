@@ -36,6 +36,7 @@ class ClientsMap{
         lock.readLock().lock();
         try{
             ResultBuffer buffer = clients.get(id);
+            if (buffer == null) return;
             buffer.queue(res);
         }
         finally{

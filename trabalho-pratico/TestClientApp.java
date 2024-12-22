@@ -10,15 +10,13 @@ public class TestClientApp {
     private static final String DIRECTORY = "tmp";
     private static final String NAME = "test";
     private String fileName = "";
+    private static final String USER = "test";
+    private static final String PASSWORD = "test";
 
     private float putWorkload(long ops) {
         TestClientApp.testsStartMessage();
-        try {
-            Client client = new ClientSingleThread();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        Client client = startClient(false);
+        if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
@@ -28,18 +26,18 @@ public class TestClientApp {
 
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            //String key = Long.toString(rand.nextLong(ops));
             String key = Long.toString(Math.abs(rand.nextLong() % ops));
-            ///////////////////// Apenas para testar /////////////////////
-            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
-            catch (InterruptedException e) { e.printStackTrace(); }   ////
-            //////////////////////////////////////////////////////////////
-//            client.put(key, value);
+//            ///////////////////// Apenas para testar /////////////////////
+//            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
+//            catch (InterruptedException e) { e.printStackTrace(); }   ////
+//            //////////////////////////////////////////////////////////////
+            client.put(key, value);
             time = System.currentTimeMillis() - time;
             String[] line = new String[] {Long.toString(i+1), Long.toString(time), key};
             data.add(line);
         }
 
+        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         String testName = NAME + "Get";
         CsvExport csvExport = new CsvExport();
@@ -49,12 +47,8 @@ public class TestClientApp {
 
     private float getWorkload(long ops) {
         TestClientApp.testsStartMessage();
-        try {
-            Client client = new ClientSingleThread();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        Client client = startClient(false);
+        if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
@@ -62,28 +56,25 @@ public class TestClientApp {
         data.add(header);
 
         // Inicialização dos dados no servidor
-        for (long i = 0; i < ops; i++) {
-            String key = Long.toString(i);
-//            client.put(key, value);
-        }
+        dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
         // Falta 99% dos acessos em 1% do dataset
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            //String key = Long.toString(rand.nextLong(ops));
             String key = Long.toString(Math.abs(rand.nextLong() % ops));
-            ///////////////////// Apenas para testar /////////////////////
-            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
-            catch (InterruptedException e) { e.printStackTrace(); }   ////
-            //////////////////////////////////////////////////////////////
-//            value = client.get(key);
+//            ///////////////////// Apenas para testar /////////////////////
+//            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
+//            catch (InterruptedException e) { e.printStackTrace(); }   ////
+//            //////////////////////////////////////////////////////////////
+            value = client.get(key);
             time = System.currentTimeMillis() - time;
             String[] line = new String[] {Long.toString(i+1), Long.toString(time), key};
             data.add(line);
         }
 
+        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         String testName = NAME + "Put";
         CsvExport csvExport = new CsvExport();
@@ -93,12 +84,8 @@ public class TestClientApp {
 
     private float putGetWorkload(long ops, int ratio) {
         TestClientApp.testsStartMessage();
-        try {
-            Client client = new ClientSingleThread();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        Client client = startClient(false);
+        if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
@@ -106,10 +93,7 @@ public class TestClientApp {
         data.add(header);
 
         // Inicialização dos dados no servidor
-        for (long i = 0; i < ops; i++) {
-            String key = Long.toString(i);
-//            client.put(key, value);
-        }
+        dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -121,7 +105,6 @@ public class TestClientApp {
             boolean isPut = r < ratio ? true : false;
             // Put
             if (isPut) {
-                //key = Long.toString(rand.nextLong(ops));
                 key = Long.toString(Math.abs(rand.nextLong() % ops));
                 ///////////////////// Apenas para testar /////////////////////
                 try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
@@ -144,11 +127,33 @@ public class TestClientApp {
             data.add(line);
         }
 
+        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         String testName = NAME + "PutGet";
         CsvExport csvExport = new CsvExport();
         fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
         return end.getTime() - start.getTime();
+    }
+
+    private Client startClient(boolean multiThreaded) {
+        Client client = null;
+        try {
+            if (multiThreaded) client = new ClientMultiThread();
+            else client = new ClientSingleThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        client.register(USER, PASSWORD);
+        client.authenticate(USER, PASSWORD);
+        return client;
+    }
+
+    private void dataInitialization(Client client, long ops, byte[] value) {
+        for (long i = 0; i < ops; i++) {
+            String key = Long.toString(i);
+            client.put(key, value);
+        }
     }
 
     public static void main(String[] args) {
@@ -164,8 +169,8 @@ public class TestClientApp {
                 if (args.length == 2) ops = Long.parseLong(args[1]);
                 else if (args.length == 3) ops = Long.parseLong(args[2]);
                 float time = -1;
-                if (test.equals("-g")) time = testClient.putWorkload(ops);
-                else if (test.equals("-p")) time = testClient.getWorkload(ops);
+                if (test.equals("-g")) time = testClient.getWorkload(ops);
+                else if (test.equals("-p")) time = testClient.putWorkload(ops);
                 else if (test.equals("-pg") && args.length == 3) {
                     ratio = Integer.parseInt(args[1]);
                     if (ratio >= 0 || ratio <= 100) time = testClient.putGetWorkload(ops, ratio);
