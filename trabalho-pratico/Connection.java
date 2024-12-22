@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Classe Connection responsável por enviar Messages da origem ao destino,
@@ -14,10 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Connection {
     private Socket socket;
-    private DataInputStream in;
-    private ReentrantLock lockIn;    
+    private DataInputStream in;   
     private DataOutputStream out;
-    private ReentrantLock lockOut;
 
     /**
      * Construtor parametrizado que cria um objeto Connection
@@ -29,9 +26,7 @@ public class Connection {
     Connection (InetAddress ip, int port) throws IOException {
         this.socket = new Socket(ip, port);        
         this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        this.lockIn = new ReentrantLock();
         this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-        this.lockOut = new ReentrantLock();
     }
 
     /**
@@ -43,9 +38,7 @@ public class Connection {
     Connection (Socket s) throws IOException {
         this.socket = s;
         this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        this.lockIn = new ReentrantLock();
         this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-        this.lockOut = new ReentrantLock();
     }
 
     /**
@@ -54,15 +47,11 @@ public class Connection {
      * @param m
      */
     public void send(Message m) {
-        lockOut.lock();
             try {
                 m.serialize(out);
                 out.flush();
                 
-            } catch (IOException e) {
-            }finally{
-                lockOut.unlock();
-            }
+            } catch (IOException e) { }
     }
 
     /**
@@ -71,7 +60,6 @@ public class Connection {
      * @return
      */
     public Message receive() {
-        lockIn.lock();
         try{
             String tipo = in.readUTF();
             Message message;
@@ -124,10 +112,7 @@ public class Connection {
 
             }
             
-        } catch (IOException e) {
-        }finally{
-            lockIn.unlock();
-        }
+        } catch (IOException e) { }
         return null;
     }
 
