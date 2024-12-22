@@ -15,7 +15,7 @@ public class ClientMultiThread implements Client {
     private Buffer requestBuffer = new Buffer();
     private Map<Long,Buffer> resultBuffer = new HashMap<Long,Buffer>();
     private Connection connection;
-    private Dispatcher dispatcher = new Dispatcher(condition);
+    private Dispatcher dispatcher = new Dispatcher();
     private String userId;
 
     public ClientMultiThread() throws IOException, UnknownHostException {
@@ -69,9 +69,11 @@ public class ClientMultiThread implements Client {
         Buffer buffer = getBuffer(id);
         Message message = new Put(key, value);
         message.setId(id);
+        System.out.println("Enviado put com id " + id);
         requestBuffer.queue(message);
         try {
             Message res = (Message) buffer.unqueue();
+            System.out.println("Recebida mensagem " + res.getClass().getSimpleName());
             if (res instanceof ResPut) {
                 Message result = (ResPut) res;
                 if (result != null) ;
@@ -197,13 +199,8 @@ public class ClientMultiThread implements Client {
     }
 
     class Dispatcher {
-        Thread send = new Thread();
-        Thread receive = new Thread();
-        Condition condition;
-
-        Dispatcher(Condition c) {
-            this.condition = c;
-        }
+        Thread send = new Thread(new SendThread());
+        Thread receive = new Thread(new ReceiveThread());
 
         private void run() {
             send.start();
@@ -234,9 +231,11 @@ public class ClientMultiThread implements Client {
             public void run() {
                 while (!Thread.interrupted()) {
                     Message message = connection.receive();
-                    long id = message.getId();
-                    Buffer buffer = resultBuffer.get(id);
-                    buffer.queue(message);
+                    if (message != null) {
+                        long id = message.getId();
+                        Buffer buffer = resultBuffer.get(id);
+                        buffer.queue(message);
+                    }
                 }
             }
         }

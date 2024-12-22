@@ -185,8 +185,10 @@ class RequestThread implements Runnable{
     }
     public void run(){ //trocar para alguma condição
         while(true){
+            System.out.println("A fazer unqueue de um request");
             Request r = requests.unqueue();
             Message m = r.getMessage();
+            System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
             Message res = processMessage(m);
             cli.queueResult(r.getId(), res);
         }

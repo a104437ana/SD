@@ -12,6 +12,7 @@ public class Buffer {
         lock.lock();
         try{
             buffer.add(m);
+            bufferEmpty.signal();
         }
         finally{
             lock.unlock();
@@ -22,15 +23,10 @@ public class Buffer {
         Object m = null;
         lock.lock();
         try{
-            while(buffer.isEmpty()){
-                if(buffer.isEmpty()){
-                    bufferEmpty.await();
-                }
-                else{
-                    m = buffer.remove();
-                    break;
-                }
+            while(buffer.isEmpty()) {
+                bufferEmpty.await();
             }
+            m = buffer.remove();
         }
         finally{
             lock.unlock();
