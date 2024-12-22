@@ -13,8 +13,14 @@ public class ClientApp {
     private Scanner in;
     
     public ClientApp(boolean singleThread) {
-        if (singleThread) this.client = new ClientSingleThread();
-        else this.client = new ClientMultiThread();
+        try {
+            if (singleThread) this.client = new ClientSingleThread();
+            else this.client = new ClientMultiThread();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            Menu.pressEnterToContinue();
+        }
         this.AUTHENTICATED = false;
         this.menus = new HashMap<>();
         this.in = new Scanner(System.in);

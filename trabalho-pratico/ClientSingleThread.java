@@ -2,12 +2,18 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientSingleThread implements Client {
     Connection connection;
     String id;
+
+    public ClientSingleThread() throws IOException, UnknownHostException {
+        InetAddress ip = InetAddress.getByName("localhost");
+        this.connection = new Connection(ip, 10000);
+    }
 
     /**
      * Método register que permite a um cliente se registar no servidor
@@ -35,13 +41,6 @@ public class ClientSingleThread implements Client {
      */
     public boolean authenticate(String user, String password) {
         Login r=new Login(user,password);
-        try {
-            InetAddress ip = InetAddress.getByName("localhost");
-            this.connection=new Connection(ip,10000);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
         connection.send(r); //envia a mensagem
         //procura a resposta
         Message response=connection.receive();
@@ -49,7 +48,6 @@ public class ClientSingleThread implements Client {
             ResLogin res = (ResLogin) response;
             boolean sucessfull = res.getResult();
             if (sucessfull) id = user;
-            else connection.close();
             return sucessfull;
         }
         return false;    

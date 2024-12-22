@@ -4,16 +4,24 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientMultiThread implements Client {
     private boolean authenticated = false;
+    private boolean exited = false;
     private ReentrantLock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
     private Buffer requestBuffer = new Buffer();
     private Map<Long,Buffer> resultBuffer = new HashMap<Long,Buffer>();
     private Connection connection;
-    private Dispatcher dispatcher = new Dispatcher();
+    private Dispatcher dispatcher = new Dispatcher(condition);
     private String userId;
+
+    public ClientMultiThread() throws IOException, UnknownHostException {
+        InetAddress ip = InetAddress.getByName("localhost");
+        this.connection = new Connection(ip, 10000);
+    }
 
     public boolean register(String user, String password) {
         lock.lock();
@@ -35,13 +43,6 @@ public class ClientMultiThread implements Client {
     public boolean authenticate(String user, String password) {
         lock.lock();
         try {
-            try {
-                InetAddress ip = InetAddress.getByName("localhost");
-                connection = new Connection(ip,10000);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
             Message message = new Login(user, password);
             connection.send(message);
             Message res = connection.receive();
@@ -53,9 +54,6 @@ public class ClientMultiThread implements Client {
                     authenticated = true;
                     userId = user;
                     dispatcher.run();
-                }
-                else {
-                    connection.close();
                 }
             }
             return sucessfull;
@@ -167,11 +165,20 @@ public class ClientMultiThread implements Client {
     }
 
     public void logout() {
+        if (!authenticated) return;
         lock.lock();
         try {
             Message message = new Exit(userId);
             requestBuffer.queue(message);
-            authenticated = false;
+            try {
+                System.out.println("A fazer logout"); //
+                authenticated = false;
+                while (!exited) condition.await();
+                System.out.println("Logout efetuado"); //
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             dispatcher.close();
             connection.close();
         }
@@ -192,6 +199,11 @@ public class ClientMultiThread implements Client {
     class Dispatcher {
         Thread send = new Thread();
         Thread receive = new Thread();
+        Condition condition;
+
+        Dispatcher(Condition c) {
+            this.condition = c;
+        }
 
         private void run() {
             send.start();
@@ -203,7 +215,13 @@ public class ClientMultiThread implements Client {
                 while (!Thread.interrupted()) {
                     try {
                         Message message = (Message) requestBuffer.unqueue();
+                        System.out.println("A enviar mensagem " + message.getClass().getSimpleName()); //
                         connection.send(message);
+                        if (message instanceof Exit) {
+                            System.out.println("Enviado exit"); //
+                            exited = true;
+                            condition.signalAll();
+                        }
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();

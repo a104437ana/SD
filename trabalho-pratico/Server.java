@@ -102,9 +102,7 @@ class ConnectionThread implements Runnable{
             boolean authenticated = false;
             String authenticatedId = null;
             while((!authenticated)&&connectionOpen){
-                System.out.println("À espera de uma mensagem");
                 Message m = connection.receive();
-                System.out.println("Mensagem " + m.getClass().getSimpleName() + " recebida");
                 if(m.getClass().getSimpleName().equals("Exit")){
                     connectionOpen = false;
                     break;
@@ -129,7 +127,6 @@ class ConnectionThread implements Runnable{
                         break;
                     }
                 }
-                System.out.println("Mensagem " + m.getClass().getSimpleName() + " processada");
             }
             if(authenticated&&connectionOpen){
                 sendResults = new Thread(new ConnectionResultsThread(connection, results));
@@ -286,12 +283,9 @@ class ThreadPool{
     public ThreadPool(ClientsMap map, RequestBuffer requests, ArmazemDadosPartilhados dataBase){
         this.clients = map;
         this.requestBuffer = requests;
-//        System.out.println("A criar " + THREAD_POOL_SIZE + " threads"); // Para apagar
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
             threadPool[i] = new Thread(new RequestThread(requestBuffer,  clients, dataBase));
-//            System.out.println("Criada thread " + i); // Para apagar
             threadPool[i].start();
-//            System.out.println("Iniciada thread " + i); // Para apagar
         }
     }
 }
