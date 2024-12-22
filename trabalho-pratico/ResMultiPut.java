@@ -32,4 +32,8 @@ public class ResMultiPut extends Message {
             return null;
         }
     }
+
+    public boolean getValue() {
+        return this.sucess;
+    }
 }

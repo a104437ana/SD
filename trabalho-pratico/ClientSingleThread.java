@@ -94,8 +94,7 @@ public class ClientSingleThread implements Client {
             connection.send(mp);
             Message response=connection.receive();
             if (response instanceof MultiPut) {
-                MultiPut res = (MultiPut) response;
-                //return res.getPairs();
+                ResMultiPut res = (ResMultiPut) response;
         }
     }
     /**
