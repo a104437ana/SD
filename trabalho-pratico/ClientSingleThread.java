@@ -125,7 +125,15 @@ public class ClientSingleThread implements Client {
      * @return
      */
     public byte[] getWhen(String key, String keyCond, byte[] valueCond) {
-        return null;
+        GetWhen g=new GetWhen(key,keyCond,valueCond);
+        connection.send(g); //envia a mensagem
+        //procura a resposta
+        Message response=connection.receive();
+        if (response instanceof ResGetWhen) {
+            ResGetWhen res = (ResGetWhen) response;
+            return res.getValue();
+        }
+        return null;    
     }
     
     /**
