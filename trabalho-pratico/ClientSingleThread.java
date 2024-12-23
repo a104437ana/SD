@@ -65,13 +65,7 @@ public class ClientSingleThread implements Client {
         Put put=new Put(key, value);
         connection.send(put);
         Message response=connection.receive();
-        if (response instanceof ResPut) {
-            ResPut res = (ResPut) response;
-            if(!res.getValue()){
-                System.out.println("It was not successfull.\nTry again!");
-
-            }
-        }
+        ResPut res = (ResPut) response;
     }
 
     /**
@@ -85,12 +79,8 @@ public class ClientSingleThread implements Client {
         connection.send(g); //envia a mensagem
         //procura a resposta
         Message response=connection.receive();
-        if (response instanceof ResGet) {
-            ResGet res = (ResGet) response;
-            System.out.println("Answer:"+new String(res.getValue(), StandardCharsets.UTF_8));
-            return res.getValue();
-        }
-        return null;
+        ResGet res = (ResGet) response;
+        return res.getValue();
     }
 
     /**
@@ -102,9 +92,7 @@ public class ClientSingleThread implements Client {
         MultiPut mp=new MultiPut(pairs);
             connection.send(mp);
             Message response=connection.receive();
-            if (response instanceof MultiPut) {
-                ResMultiPut res = (ResMultiPut) response;
-        }
+            ResMultiPut res = (ResMultiPut) response;
     }
     /**
      * Método permite a um cliente, depois de autenticado,
@@ -117,14 +105,8 @@ public class ClientSingleThread implements Client {
         connection.send(g); //envia a mensagem
         //procura a resposta
         Message response=connection.receive();
-        if (response instanceof ResMultiGet) {
-            ResMultiGet res = (ResMultiGet) response;
-            for (Map.Entry<String, byte[]> a : res.getPairs().entrySet()) {
-            System.out.println("Answer for key '" + a.getKey() + "': " + new String(a.getValue(), StandardCharsets.UTF_8));
-}
-            return res.getPairs();
-        }
-        return null;
+        ResMultiGet res = (ResMultiGet) response;
+        return res.getPairs();
     }
 
     /**
@@ -141,11 +123,8 @@ public class ClientSingleThread implements Client {
         connection.send(g); //envia a mensagem
         //procura a resposta
         Message response=connection.receive();
-        if (response instanceof ResGetWhen) {
-            ResGetWhen res = (ResGetWhen) response;
-            return res.getValue();
-        }
-        return null;    
+        ResGetWhen res = (ResGetWhen) response;
+        return res.getValue();  
     }
     
     /**

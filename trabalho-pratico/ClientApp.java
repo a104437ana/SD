@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
 
 public class ClientApp {
 
@@ -95,7 +96,8 @@ public class ClientApp {
         byte[] value = client.get(key);
         // Falta alterar para mostrar o value, para ficheiro ou no ecrã
         if (value != null) {
-            System.out.println("Get efetuado com sucesso");
+            String s = String.format("Get efetuado com sucesso, value = %s",new String(value,StandardCharsets.UTF_8));
+            System.out.println(s);
             Menu.pressEnterToContinue();
         }
         else {
@@ -157,6 +159,10 @@ public class ClientApp {
 //        Map<String,byte[]> pairs = client.multiGet(keys);
         if (pairs.size() == numberOfPairs) {
             System.out.println("MultiGet efetuado com sucesso");
+            for (Map.Entry<String,byte[]> e : pairs.entrySet()) {
+                 String s = String.format("key = %s, value = %s",e.getKey(),new String(e.getValue(),StandardCharsets.UTF_8));
+                System.out.println(s);
+            }
             Menu.pressEnterToContinue();
         }
         else {
