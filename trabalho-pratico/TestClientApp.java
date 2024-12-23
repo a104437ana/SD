@@ -3,6 +3,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TestClientApp {
     
@@ -16,9 +17,12 @@ public class TestClientApp {
     private static final int GET = 0;
     private static final int PUT = 1;
     private static final int PUTGET = 2;
+    private static boolean IS_MULTITHREADED = false;
+    private static float maxTime = 0;
+    private static ReentrantLock lock = new ReentrantLock();
+    private static boolean MULTI_CLIENT = false;
 
-    private float putWorkload(long ops) {
-        TestClientApp.testsStartMessage();
+    private float putWorkload(long ops, int access, long top) {
         Client client = startClient(false);
         if (client == null) return -1;
         Random rand = new Random();
@@ -30,7 +34,7 @@ public class TestClientApp {
 
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            String key = Long.toString(Math.abs(rand.nextLong() % ops));
+            String key = Long.toString(getKey(access, top, rand, ops));
 //            ///////////////////// Apenas para testar /////////////////////
 //            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
 //            catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -43,14 +47,14 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String testName = NAME + "Get";
+        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        String testName = NAME + "Put" + thread;
         CsvExport csvExport = new CsvExport();
         fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
         return end.getTime() - start.getTime();
     }
 
-    private float getWorkload(long ops) {
-        TestClientApp.testsStartMessage();
+    private float getWorkload(long ops, int access, long top) {
         Client client = startClient(false);
         if (client == null) return -1;
         Random rand = new Random();
@@ -67,7 +71,7 @@ public class TestClientApp {
         // Falta 99% dos acessos em 1% do dataset
         for (long i = 0; i < ops; i++) {
             long time = System.currentTimeMillis();
-            String key = Long.toString(Math.abs(rand.nextLong() % ops));
+            String key = Long.toString(getKey(access, top, rand, ops));
 //            ///////////////////// Apenas para testar /////////////////////
 //            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
 //            catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -80,14 +84,14 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String testName = NAME + "Put";
+        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        String testName = NAME + "Get" + thread;
         CsvExport csvExport = new CsvExport();
         fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
         return end.getTime() - start.getTime();
     }
 
-    private float putGetWorkload(long ops, int ratio) {
-        TestClientApp.testsStartMessage();
+    private float putGetWorkload(long ops, int ratio, int access, long top) {
         Client client = startClient(false);
         if (client == null) return -1;
         Random rand = new Random();
@@ -109,7 +113,7 @@ public class TestClientApp {
             boolean isPut = r < ratio ? true : false;
             // Put
             if (isPut) {
-                key = Long.toString(Math.abs(rand.nextLong() % ops));
+                key = Long.toString(getKey(access, top, rand, ops));
                 byte[] v = new byte[VALUE_SIZE];
 //                ///////////////////// Apenas para testar /////////////////////
 //                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
@@ -120,7 +124,8 @@ public class TestClientApp {
             // Get
             else {
                 //key = Long.toString(rand.nextLong(ops));
-                key = Long.toString(Math.abs(rand.nextLong() % ops));
+                key = Long.toString(getKey(access, top, rand, ops));
+//                key = Long.toString(Math.abs(rand.nextLong() % ops));
 //                ///////////////////// Apenas para testar /////////////////////
 //                try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
 //                catch (InterruptedException e) { e.printStackTrace(); }   ////
@@ -134,10 +139,90 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String testName = NAME + "PutGet";
+        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        String testName = NAME + "PutGet" + thread;
         CsvExport csvExport = new CsvExport();
         fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
         return end.getTime() - start.getTime();
+    }
+
+    private float putWorkload(long ops, int access, long top, int clients) {
+        Thread[] threads = new Thread[clients];
+        for (int i = 0; i < clients; i++) {
+            threads[i] = new Thread(new Worker(PUT, ops, -1, access, top));
+            threads[i].start();
+        }
+        try {
+            for (int i = 0; i < clients; i++) {
+                threads[i].join();
+            }
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return maxTime;
+    }
+
+    private float getWorkload(long ops, int access, long top, int clients) {
+        Thread[] threads = new Thread[clients];
+        for (int i = 0; i < clients; i++) {
+            threads[i] = new Thread(new Worker(GET, ops, -1, access, top));
+            threads[i].start();
+        }
+        try {
+            for (int i = 0; i < clients; i++) {
+                threads[i].join();
+            }
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return maxTime;
+    }
+
+    private float putGetWorkload(long ops, int ratio, int access, long top, int clients) {
+        Thread[] threads = new Thread[clients];
+        for (int i = 0; i < clients; i++) {
+            threads[i] = new Thread(new Worker(PUTGET, ops, ratio, access, top));
+            threads[i].start();
+        }
+        try {
+            for (int i = 0; i < clients; i++) {
+                threads[i].join();
+            }
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return maxTime;
+    }
+
+    class Worker implements Runnable {
+        private int type;
+        private long ops;
+        private int ratio;
+        private int access;
+        private long top;
+        Worker(int t, long o, int r, int a, long top) {
+            this.type = t;
+            this.ops = o;
+            this.ratio = r;
+            this.access = a;
+            this.top = top;
+        }
+        public void run() {
+            float time = 0;
+            if (type == GET) time = getWorkload(ops, access, top);
+            else if (type == PUT) time = putWorkload(ops, access, top);
+            else if (type == PUTGET) time = putGetWorkload(ops, ratio, access, top);
+            lock.lock();
+            try{
+                if (time > maxTime) maxTime = time; 
+            }
+            finally {
+                lock.unlock();
+            }
+        }
     }
 
     private Client startClient(boolean multiThreaded) {
@@ -161,9 +246,17 @@ public class TestClientApp {
         }
     }
 
+    private long getKey(int access, long top, Random rand, long ops) {
+        long dataSetPercentage = Math.abs(rand.nextLong() % 100);
+        long key = Math.abs(rand.nextLong());
+        if (dataSetPercentage < access) key = key % top;
+        else key = (key % (ops - top)) + top;
+        return key;
+    }
+
     public static void main(String[] args) {
         TestClientApp testClient = new TestClientApp();
-        if (args.length < 2 || args.length > 3) {
+        if (args.length < 2) {
             TestClientApp.errorMessage("Número de argumentos inválido");
         }
         else {
@@ -171,6 +264,8 @@ public class TestClientApp {
             long ops = -1;
             int ratio = -1;
             int clients = -1;
+            int access = 50;
+            int top = 50;
             boolean invalidCombination = false;
             boolean type = false;
             boolean[] typeTest = new boolean[NUMBER_TESTS];
@@ -178,9 +273,12 @@ public class TestClientApp {
                 for (int i = 0; i < args.length; i++) {
                     int test = -1;
                     if (args[i].equals("-c")) clients = Integer.parseInt(args[++i]);
+                    else if (args[i].equals("-d")) { access = Integer.parseInt(args[++i]); top = Integer.parseInt(args[++i]); }
                     else if (args[i].equals("-g")) test = GET;
                     else if (args[i].equals("-p")) test = PUT;
-                    else if (args[i].equals("pg")) test = PUTGET;
+                    else if (args[i].equals("-pg")) test = PUTGET;
+                    else if (args[i].equals("-m")) IS_MULTITHREADED = true;
+                    else if (args[i].equals("-s")) IS_MULTITHREADED = false;
                     else incorrectArguments++;
                     if (test >= 0) {
                         typeTest[test] = true;
@@ -199,13 +297,19 @@ public class TestClientApp {
             else if (invalidCombination) TestClientApp.errorMessage("Combinação de argumentos inválida");
             else if (!type) TestClientApp.errorMessage("Tipo de workload inválido");
             else if (ops < 0) TestClientApp.errorNumberFormat("ops");
+            else if (access < 0 || access > 100) TestClientApp.errorMessage("access");
+            else if (top < 0 || top > 100) TestClientApp.errorMessage("top");
             else if (typeTest[PUTGET] && (ratio < 0 || ratio > 100)) TestClientApp.errorNumberFormat("ratio");
             else {
                 if (clients <= 0) clients = 1;
+                if (clients > 1) MULTI_CLIENT = true;
                 float time = -1;
-                if (typeTest[GET]) time = testClient.getWorkload(ops);
-                else if (typeTest[PUT]) time = testClient.putWorkload(ops);
-                else if (typeTest[PUTGET]) time = testClient.putGetWorkload(ops, ratio);
+                float topPercentage = ((float) top) / 100;
+                long topOps = (long) (topPercentage * ops);
+                TestClientApp.testsStartMessage();
+                if (typeTest[GET]) time = testClient.getWorkload(ops, access, topOps, clients);
+                else if (typeTest[PUT]) time = testClient.putWorkload(ops, access, topOps, clients);
+                else if (typeTest[PUTGET]) time = testClient.putGetWorkload(ops, ratio, access, topOps, clients);
                 String dirFileName = "./" + DIRECTORY + "/" + testClient.fileName;
                 TestClientApp.testsEndMessage(time, dirFileName);
             }
@@ -214,7 +318,7 @@ public class TestClientApp {
 
     private static void errorMessage(String error) {
         System.out.println(error);
-        System.out.println("  java TestClientApp <tipo de workload> <número de operações>");
+        System.out.println("  java TestClientApp <tipo de workload> <número de operações> <distribuição> <número de clientes> <tipo do cliente>");
         System.out.println("    Tipo de workload:");
         System.out.println("      -g : Apenas de Gets");
         System.out.println("      -p : Apenas de Puts");
@@ -222,10 +326,22 @@ public class TestClientApp {
         System.out.println("                  Puts em relação a Gets, de 0 a 100");
         System.out.println("    Número de operações:");
         System.out.println("      <int> : Número de operações a realizar");
+        System.out.println("    Distribuição:");
+        System.out.println("      -d <int> <int> : primeiro parâmetro percentagem de acessos ao top, de 0 a 100");
+        System.out.println("                       segundo parâmetro percentagem do top, de 0 a 100");
+        System.out.println("                       Distribuição por defeito 50 50, 50% acessos a 50% do dataset");
+        System.out.println("    Número de clientes:");
+        System.out.println("      -c <int> : Número de clientes singlethread ou threads de cliente multithread");
+        System.out.println("                 Valor por defeito 1");
+        System.out.println("    Tipo de cliente:");
+        System.out.println("      -m : Cliente multithread");
+        System.out.println("      -s : Cliente singlethread, valor por defeito");
     }
 
     private static void errorNumberFormat(String type) {
         if (type.equals("ops")) System.out.println("Número de operações inválido, deve ser um inteiro positivo");
+        else if (type.equals("access")) System.out.println("Percentagem de acessos inválida, deve ser um inteiro entre 0 e 100");
+        else if (type.equals("top")) System.out.println("Percentagem de top inválida, deve ser um inteiro entre 0 e 100");
         else if (type.equals("ratio")) System.out.println("Percentagem de Puts em relação a Gets inválida, deve ser um inteiro entre 0 e 100");
     }
 
