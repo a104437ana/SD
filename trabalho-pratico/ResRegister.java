@@ -4,7 +4,6 @@ import java.io.IOException;
 
 public class ResRegister extends Message {
     private boolean sucessfull;
-    private String tipo="ResRegister";
 
 
     public ResRegister(boolean sucessfull) {
@@ -17,7 +16,6 @@ public class ResRegister extends Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        out.writeUTF(tipo);
         out.writeBoolean(sucessfull);
     }
 

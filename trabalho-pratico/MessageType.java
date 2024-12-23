@@ -1,0 +1,18 @@
+public enum MessageType {
+    Register,
+    Login,
+    Exit,
+    Get,
+    Put,
+    MultiGet,
+    MultiPut,
+    GetWhen,
+    ResRegister,
+    ResLogin,
+    ResExit,
+    ResGet,
+    ResPut,
+    ResMultiGet,
+    ResMultiPut,
+    ResGetWhen,
+}

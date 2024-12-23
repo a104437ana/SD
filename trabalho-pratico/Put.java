@@ -3,7 +3,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class Put extends Message {
-    private String tipo="Put";
     private String key;
     private byte[] value;
 
@@ -22,7 +21,6 @@ public class Put extends Message {
 
     public void serialize(DataOutputStream out) throws IOException{
         try{
-            out.writeUTF(tipo);
             out.writeLong(this.getId());
             out.writeUTF(key);
             out.writeInt(this.value.length);

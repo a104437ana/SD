@@ -103,7 +103,9 @@ class ConnectionThread implements Runnable{
             boolean authenticated = false;
             String authenticatedId = null;
             while((!authenticated)&&connectionOpen){
-                Message m = connection.receive();
+                MessageContainer mc = connection.receive();
+                if (mc != null) {
+                Message m = mc.getMessage();
                 if(m!=null){
                     if(m.getClass().getSimpleName().equals("Exit")){
                         connectionOpen = false;
@@ -112,7 +114,7 @@ class ConnectionThread implements Runnable{
                     else if(m.getClass().getSimpleName().equals("Register")){
                         Register r = (Register) m;
                         credentials.register(r.getID(), r.getPassword());
-                        connection.send(new ResRegister(true));
+                        connection.send(new MessageContainer(new ResRegister(true)));
                     }
                     else if (m.getClass().getSimpleName().equals("Login")){
                         Login l = (Login) m;
@@ -120,23 +122,25 @@ class ConnectionThread implements Runnable{
                         boolean sucess = credentials.login(l.getID(), l.getPassword());
                         if (sucess){
                             clients.put(l.getID(), results);
-                            connection.send(new ResLogin(sucess));
+                            connection.send(new MessageContainer(new ResLogin(sucess)));
                             authenticated = true;
                             authenticatedId = l.getID();
                         }
                         else{
-                            connection.send(new ResLogin(sucess));
+                            connection.send(new MessageContainer(new ResLogin(sucess)));
                             break;
                         }
                     }
                 }
                 else connectionOpen = false;
             }
+            else connectionOpen = false;
+            }
             if(authenticated&&connectionOpen){
                 sendResults = new Thread(new ConnectionResultsThread(connection, results));
                 sendResults.start();
                 while(connectionOpen){
-                    Message receive = connection.receive();
+                    Message receive = connection.receive().getMessage();
                     if(receive.getClass().getSimpleName().equals("Exit")){
                         Exit e = (Exit) receive;
                         connectionOpen = false;
@@ -169,7 +173,8 @@ class ConnectionResultsThread implements Runnable{
             Message m;
             try {
                 m = results.unqueue();
-                connection.send(m);
+                MessageContainer mc = new MessageContainer(m);
+                connection.send(mc);
             } 
             catch (InterruptedException e) {
                 connectionOpen = false;

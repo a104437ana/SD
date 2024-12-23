@@ -4,7 +4,6 @@ import java.io.IOException;
 
 public class Exit extends Message {
     private String id;
-    private String tipo="Exit";
 
     public Exit(String id) {
         this.id = id;
@@ -15,7 +14,6 @@ public class Exit extends Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        out.writeUTF(tipo);
         out.writeUTF(id);
     }
 

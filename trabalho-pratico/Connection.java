@@ -46,9 +46,9 @@ public class Connection {
      * por tcp, a qual a socket se encontra conectada
      * @param m
      */
-    public void send(Message m) {
+    public void send(MessageContainer mc) {
             try {
-                m.serialize(out);
+                mc.serialize(out);
                 out.flush();
                 
             } catch (IOException e) { }
@@ -59,60 +59,10 @@ public class Connection {
      * por tcp, a qual a socket se encontra conectada
      * @return
      */
-    public Message receive() {
+    public MessageContainer receive() {
         try{
-            String tipo = in.readUTF();
-            Message message;
-            switch (tipo) {
-                case "Put":
-                    message = Put.deserialize(in);
-                    return message;
-                case "ResPut":
-                    message = ResPut.deserialize(in);
-                    return message;  
-                case "Get":
-                    message = Get.deserialize(in);
-                    return message;
-                case "ResGet":
-                    message = ResGet.deserialize(in);
-                    return message; 
-                case "MultiPut":
-                    message = MultiPut.deserialize(in);                    
-                    return message; 
-                case "ResMultiPut":
-                    message = ResMultiPut.deserialize(in);
-                    return message;
-                case "MultiGet":
-                    message = MultiGet.deserialize(in);         
-                    return message;
-                case "ResMultiGet":
-                    message = ResMultiGet.deserialize(in);
-                    return message;
-                case "GetWhen":
-                    message = GetWhen.deserialize(in);         
-                    return message;
-                case "ResGetWhen":
-                    message = ResGetWhen.deserialize(in);
-                    return message;
-                case "Exit":
-                    message = Exit.deserialize(in);
-                    return message;
-                case "Login":
-                    message = Login.deserialize(in);
-                    return message;
-                case "ResLogin":
-                    message = ResLogin.deserialize(in);
-                    return message;
-                case "Register":
-                    message = Register.deserialize(in);                  
-                    return message;
-                case "ResRegister":
-                    message = ResRegister.deserialize(in);
-                    return message;
-
-            }
-            
-        } catch (IOException e) { }
+            return MessageContainer.deserialize(in);
+        } catch (Exception e) { }
         return null;
     }
 

@@ -4,8 +4,6 @@ import java.io.IOException;
 
 public class Get extends Message {
     private String key;
-    private String tipo="Get";
-
 
     public Get(String key) {
         this.key = key;
@@ -16,7 +14,6 @@ public class Get extends Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        out.writeUTF(tipo);
         out.writeLong(this.getId());
         out.writeUTF(key);
     }

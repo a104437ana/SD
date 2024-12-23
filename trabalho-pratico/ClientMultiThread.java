@@ -27,8 +27,9 @@ public class ClientMultiThread implements Client {
         lock.lock();
         try {
             Message message = new Register(user, password);
-            connection.send(message);
-            Message res = connection.receive();
+            MessageContainer mc = new MessageContainer(message);
+            connection.send(mc);
+            Message res = connection.receive().getMessage();
             boolean sucessfull = false;
             if (res instanceof ResRegister) {
                 ResRegister result = (ResRegister) res;
@@ -44,8 +45,9 @@ public class ClientMultiThread implements Client {
         lock.lock();
         try {
             Message message = new Login(user, password);
-            connection.send(message);
-            Message res = connection.receive();
+            MessageContainer mc = new MessageContainer(message);
+            connection.send(mc);
+            Message res = connection.receive().getMessage();
             boolean sucessfull = false;
             if (res instanceof ResLogin) {
                 ResLogin result = (ResLogin) res;
@@ -203,7 +205,8 @@ public class ClientMultiThread implements Client {
                 while (!Thread.interrupted()) {
                     try {
                         Message message = (Message) requestBuffer.unqueue();
-                        connection.send(message);
+                        MessageContainer mc = new MessageContainer(message);
+                        connection.send(mc);
                         if (message instanceof Exit) {
                             exited = true;
 //                            condition.signalAll();
@@ -219,7 +222,7 @@ public class ClientMultiThread implements Client {
         class ReceiveThread implements Runnable {
             public void run() {
                 while (!Thread.interrupted()) {
-                    Message message = connection.receive();
+                    Message message = connection.receive().getMessage();
                     if (message != null) {
                         long id = message.getId();
                         Buffer buffer = resultBuffer.get(id);

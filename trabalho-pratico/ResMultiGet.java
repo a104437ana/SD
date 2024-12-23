@@ -5,8 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ResMultiGet extends Message {
-    Map<String, byte[]> values;  
-    private String tipo="ResMultiGet";
+    Map<String, byte[]> values;
 
     public ResMultiGet(Map<String, byte[]> res){
         this.values=res;
@@ -14,7 +13,6 @@ public class ResMultiGet extends Message {
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
-            out.writeUTF(tipo);
             out.writeLong(this.getId());
             out.writeInt(values.size());
             for(Map.Entry<String,byte[]> entry : values.entrySet()){

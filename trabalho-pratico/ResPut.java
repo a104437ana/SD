@@ -4,7 +4,6 @@ import java.io.IOException;
 
 public class ResPut extends Message {
     boolean sucess;
-    private String tipo="ResPut";
 
     public ResPut(boolean s){
         this.sucess=s;
@@ -12,7 +11,6 @@ public class ResPut extends Message {
 
     public void serialize(DataOutputStream out) throws IOException {
             try{
-                out.writeUTF(tipo);
                 out.writeLong(this.getId());
                 out.writeBoolean(this.sucess);
             }catch (IOException e){

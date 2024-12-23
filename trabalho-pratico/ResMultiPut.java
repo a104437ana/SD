@@ -4,7 +4,6 @@ import java.io.IOException;
 
 public class ResMultiPut extends Message {
     boolean sucess;
-    private String tipo="ResMultiPut";
 
 
     public ResMultiPut(boolean s){
@@ -13,7 +12,6 @@ public class ResMultiPut extends Message {
 
     public void serialize(DataOutputStream out) throws IOException {
             try{
-                out.writeUTF(tipo);
                 out.writeLong(this.getId());
                 out.writeBoolean(this.sucess);
             }catch (IOException e){

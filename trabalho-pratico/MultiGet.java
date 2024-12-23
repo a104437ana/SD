@@ -6,7 +6,6 @@ import java.util.Set;
 
 public class MultiGet extends Message {
     private Set<String> keys;
-    private String tipo="MultiGet";
 
 
     public MultiGet (Set<String> keys) {
@@ -19,7 +18,6 @@ public class MultiGet extends Message {
 
     public void serialize(DataOutputStream out) throws IOException {
         try{
-        out.writeUTF(tipo);
         out.writeLong(this.getId());
         out.writeInt(keys.size());
         for (String key : keys) {

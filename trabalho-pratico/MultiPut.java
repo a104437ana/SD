@@ -6,7 +6,6 @@ import java.util.Map;
 
 public class MultiPut extends Message{
     Map<String, byte[]> pairs;
-    private String tipo="Multiput";
 
         public MultiPut(Map<String, byte[]> pairs){
         this.pairs=pairs;
@@ -14,7 +13,6 @@ public class MultiPut extends Message{
 
         @Override
         public void serialize(DataOutputStream out) throws IOException {
-            out.writeUTF(tipo);
             out.writeLong(this.getId());
             out.writeInt(pairs.size());//tamanho do nosso map
             for(Map.Entry<String , byte[] > entry: pairs.entrySet()){

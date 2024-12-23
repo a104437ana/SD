@@ -3,8 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ResGetWhen extends Message {
-    byte[] value;    
-    String tipo = "ResGetWhen";
+    byte[] value;
     
     public ResGetWhen(byte[] value){
         this.value=value;
@@ -12,7 +11,6 @@ public class ResGetWhen extends Message {
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
-            out.writeUTF(tipo);
             out.writeLong(this.getId());
             out.writeInt(value.length);  
             out.write(value, 0, value.length);

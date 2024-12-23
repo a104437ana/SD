@@ -24,9 +24,10 @@ public class ClientSingleThread implements Client {
      */
     public boolean register(String user, String password) {
         Register r=new Register(user,password);
-        connection.send(r); //envia a mensagem
+        MessageContainer mc = new MessageContainer(r);
+        connection.send(mc); //envia a mensagem
         //procura a resposta
-        Message response=connection.receive();
+        Message response=connection.receive().getMessage();
         if (response instanceof ResRegister) {
             ResRegister res = (ResRegister) response;
             return res.getResult();
@@ -42,9 +43,10 @@ public class ClientSingleThread implements Client {
      */
     public boolean authenticate(String user, String password) {
         Login r=new Login(user,password);
-        connection.send(r); //envia a mensagem
+        MessageContainer mc = new MessageContainer(r);
+        connection.send(mc); //envia a mensagem
         //procura a resposta
-        Message response=connection.receive();
+        Message response=connection.receive().getMessage();
         if (response instanceof ResLogin) {
             ResLogin res = (ResLogin) response;
             boolean sucessfull = res.getResult();
@@ -63,8 +65,9 @@ public class ClientSingleThread implements Client {
      */
     public void put(String key, byte[] value){
         Put put=new Put(key, value);
-        connection.send(put);
-        Message response=connection.receive();
+        MessageContainer mc = new MessageContainer(put);
+        connection.send(mc);
+        Message response=connection.receive().getMessage();
         ResPut res = (ResPut) response;
     }
 
@@ -76,9 +79,10 @@ public class ClientSingleThread implements Client {
      */
     public byte[] get(String key) { 
         Get g=new Get(key);
-        connection.send(g); //envia a mensagem
+        MessageContainer mc = new MessageContainer(g);
+        connection.send(mc); //envia a mensagem
         //procura a resposta
-        Message response=connection.receive();
+        Message response=connection.receive().getMessage();
         ResGet res = (ResGet) response;
         return res.getValue();
     }
@@ -90,8 +94,9 @@ public class ClientSingleThread implements Client {
      */
     public void multiPut(Map<String,byte[]> pairs) {
         MultiPut mp=new MultiPut(pairs);
-            connection.send(mp);
-            Message response=connection.receive();
+        MessageContainer mc = new MessageContainer(mp);
+            connection.send(mc);
+            Message response=connection.receive().getMessage();
             ResMultiPut res = (ResMultiPut) response;
     }
     /**
@@ -102,9 +107,10 @@ public class ClientSingleThread implements Client {
      */
     public Map<String,byte[]> multiGet(Set<String> keys) {
         MultiGet g=new MultiGet(keys);
-        connection.send(g); //envia a mensagem
+        MessageContainer mc = new MessageContainer(g);
+        connection.send(mc); //envia a mensagem
         //procura a resposta
-        Message response=connection.receive();
+        Message response=connection.receive().getMessage();
         ResMultiGet res = (ResMultiGet) response;
         return res.getPairs();
     }
@@ -120,9 +126,10 @@ public class ClientSingleThread implements Client {
      */
     public byte[] getWhen(String key, String keyCond, byte[] valueCond) {
         GetWhen g=new GetWhen(key,keyCond,valueCond);
-        connection.send(g); //envia a mensagem
+        MessageContainer mc = new MessageContainer(g);
+        connection.send(mc); //envia a mensagem
         //procura a resposta
-        Message response=connection.receive();
+        Message response=connection.receive().getMessage();
         ResGetWhen res = (ResGetWhen) response;
         return res.getValue();  
     }
@@ -145,7 +152,8 @@ public class ClientSingleThread implements Client {
 
     public void logout() {
         Message message = new Exit(id);
-        connection.send(message);
+        MessageContainer mc = new MessageContainer(message);
+        connection.send(mc);
         connection.close();
     }
 }

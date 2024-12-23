@@ -6,7 +6,6 @@ public class GetWhen extends Message {
     private String key;
     private String keyCond;
     private byte[] valueCond;
-    private String tipo="GetWhen";
 
     public GetWhen(String key, String keyCond, byte[] valueCond) {
         this.key = key;
@@ -27,7 +26,6 @@ public class GetWhen extends Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        out.writeUTF(tipo);
         out.writeLong(this.getId());
         out.writeUTF(key);
         out.writeUTF(keyCond);

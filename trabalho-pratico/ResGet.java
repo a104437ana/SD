@@ -3,8 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ResGet extends Message {
-    byte[] value;    
-    private String tipo="ResGet";
+    byte[] value;
 
     
     public ResGet(byte[] value){
@@ -13,7 +12,6 @@ public class ResGet extends Message {
     
     public void serialize(DataOutputStream out) throws IOException{
         try {
-            out.writeUTF(tipo);
             out.writeLong(this.getId());
             out.writeBoolean(value != null);
             if (value != null) {

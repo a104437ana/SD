@@ -5,7 +5,6 @@ import java.io.IOException;
 public class Register extends Message {
     private String id;
     private String password;
-    private String tipo="Register";
 
 
     public Register(String id, String password) {
@@ -22,7 +21,6 @@ public class Register extends Message {
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        out.writeUTF(tipo);
         out.writeUTF(id);
         out.writeUTF(password);
     }
