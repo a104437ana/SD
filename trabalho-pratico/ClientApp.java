@@ -54,7 +54,7 @@ public class ClientApp {
             menuInicial.setHandler(2, () -> menuPut());
             menuInicial.setHandler(3, () -> menuMultiGet());
             menuInicial.setHandler(4, () -> menuMultiPut());
-//            menuInicial.setHandler(5, () -> menuGetWhen());
+            menuInicial.setHandler(5, () -> menuGetWhen());
             this.menus.put("inicial", menuInicial);
             System.out.println("Autenticado com sucesso");
             Menu.pressEnterToContinue();
@@ -193,6 +193,28 @@ public class ClientApp {
 //        client.multiPut(pairs);
         System.out.println("MultiPut efetuado com sucesso");
         Menu.pressEnterToContinue();
+    }
+
+    private void menuGetWhen() {
+        Menu.clearTerminal();
+        System.out.println("\n --- Menu GetWhen --- ");
+        System.out.print("Get key : ");
+        String key = in.nextLine();
+        System.out.print("Get key condition : ");
+        String keyCond = in.nextLine();
+        System.out.print("Get value condition : ");
+        byte[] valueCond = in.nextLine().getBytes();
+//        byte[] value = new byte[10];
+        byte[] value = client.getWhen(key,keyCond,valueCond);
+        // Falta alterar para mostrar o value, para ficheiro ou no ecrã
+        if (value != null) {
+            System.out.println("GetWhen efetuado com sucesso");
+            Menu.pressEnterToContinue();
+        }
+        else {
+            System.out.println("GetWhen Falhou");
+            Menu.pressEnterToContinue();
+        }
     }
 
     public static void main(String[] args) {

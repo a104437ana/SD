@@ -15,19 +15,27 @@ public class ResGet extends Message {
         try {
             out.writeUTF(tipo);
             out.writeLong(this.getId());
-            out.writeInt(value.length);
-            out.write(value, 0, value.length);
+            out.writeBoolean(value != null);
+            if (value != null) {
+                out.writeInt(value.length);
+                out.write(value, 0, value.length);
+            }
         } catch (IOException e) {
         }
     }
 
     public static Message deserialize(DataInputStream in)throws IOException {
         try{
+            ResGet resGet;
             Long id = in.readLong();
-            int tamanho=in.readInt();
-            byte[] resposta=new byte[tamanho];
-            in.read(resposta, 0, tamanho);
-            ResGet resGet = new ResGet(resposta);
+            boolean b = in.readBoolean();
+            if (b == true) {
+                int tamanho=in.readInt();
+                byte[] resposta=new byte[tamanho];
+                in.read(resposta, 0, tamanho);
+                resGet = new ResGet(resposta);
+            }
+            else resGet = new ResGet(null);
             resGet.setId(id);
             return resGet;
         }catch (IOException e){
@@ -36,6 +44,7 @@ public class ResGet extends Message {
     }
 
     public byte[] getValue() {
-        return this.value.clone();
+        if (value == null) return null;
+        else return value.clone();
     }
 }
