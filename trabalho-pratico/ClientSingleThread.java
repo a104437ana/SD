@@ -3,6 +3,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,7 +64,14 @@ public class ClientSingleThread implements Client {
     public void put(String key, byte[] value){
         Put put=new Put(key, value);
         connection.send(put);
+        Message response=connection.receive();
+        if (response instanceof ResPut) {
+            ResPut res = (ResPut) response;
+            if(!res.getValue()){
+                System.out.println("It was not successfull.\nTry again!");
 
+            }
+        }
     }
 
     /**
@@ -79,6 +87,7 @@ public class ClientSingleThread implements Client {
         Message response=connection.receive();
         if (response instanceof ResGet) {
             ResGet res = (ResGet) response;
+            System.out.println("Answer:"+new String(res.getValue(), StandardCharsets.UTF_8));
             return res.getValue();
         }
         return null;
@@ -110,6 +119,9 @@ public class ClientSingleThread implements Client {
         Message response=connection.receive();
         if (response instanceof ResMultiGet) {
             ResMultiGet res = (ResMultiGet) response;
+            for (Map.Entry<String, byte[]> a : res.getPairs().entrySet()) {
+            System.out.println("Answer for key '" + a.getKey() + "': " + new String(a.getValue(), StandardCharsets.UTF_8));
+}
             return res.getPairs();
         }
         return null;

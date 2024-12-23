@@ -31,4 +31,8 @@ public class ResPut extends Message {
             return null;
         }
     }
+
+    public boolean getValue() {
+        return this.sucess;
+    }
 }
