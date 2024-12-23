@@ -3,17 +3,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientSingleThread implements Client {
     Connection connection;
     String id;
+    private InetAddress ip;
 
     public ClientSingleThread() throws IOException, UnknownHostException {
-        InetAddress ip = InetAddress.getByName("localhost");
-        this.connection = new Connection(ip, 10000);
+        ip = InetAddress.getByName("localhost");
+//        this.connection = new Connection(ip, 10000);
     }
 
     /**
@@ -23,6 +23,7 @@ public class ClientSingleThread implements Client {
      * @return true - sucesso / false - insucesso
      */
     public boolean register(String user, String password) {
+        newConnection();
         Register r=new Register(user,password);
         MessageContainer mc = new MessageContainer(r);
         connection.send(mc); //envia a mensagem
@@ -32,6 +33,7 @@ public class ClientSingleThread implements Client {
             Response res = (Response) response;
             return res.requestAccepted();
         }
+        connection.close();
         return false;
     }
 
@@ -42,6 +44,7 @@ public class ClientSingleThread implements Client {
      * @return true - sucesso / false - insucesso
      */
     public boolean authenticate(String user, String password) {
+        newConnection();
         Login r=new Login(user,password);
         MessageContainer mc = new MessageContainer(r);
         connection.send(mc); //envia a mensagem
@@ -51,6 +54,7 @@ public class ClientSingleThread implements Client {
             Response res = (Response) response;
             boolean sucessfull = res.requestAccepted();
             if (sucessfull) id = user;
+            else connection.close();
             return sucessfull;
         }
         return false;    
@@ -155,5 +159,10 @@ public class ClientSingleThread implements Client {
         MessageContainer mc = new MessageContainer(message);
         connection.send(mc);
         connection.close();
+    }
+
+    private void newConnection() {
+        try { this.connection = new Connection(ip, 10000); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 }

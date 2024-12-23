@@ -17,15 +17,16 @@ public class ClientMultiThread implements Client {
     private Connection connection;
     private Dispatcher dispatcher = new Dispatcher();
     private String userId;
+    private InetAddress ip;
 
     public ClientMultiThread() throws IOException, UnknownHostException {
-        InetAddress ip = InetAddress.getByName("localhost");
-        this.connection = new Connection(ip, 10000);
+        ip = InetAddress.getByName("localhost");
     }
 
     public boolean register(String user, String password) {
         lock.lock();
         try {
+            newConnection();
             Message message = new Register(user, password);
             MessageContainer mc = new MessageContainer(message);
             connection.send(mc);
@@ -35,6 +36,7 @@ public class ClientMultiThread implements Client {
                 Response result = (Response) res;
                 sucessfull = result.requestAccepted();
             }
+            connection.close();
             return sucessfull;
         }
         finally {
@@ -44,6 +46,7 @@ public class ClientMultiThread implements Client {
     public boolean authenticate(String user, String password) {
         lock.lock();
         try {
+            newConnection();
             Message message = new Login(user, password);
             MessageContainer mc = new MessageContainer(message);
             connection.send(mc);
@@ -57,6 +60,7 @@ public class ClientMultiThread implements Client {
                     userId = user;
                     dispatcher.run();
                 }
+                else connection.close();
             }
             return sucessfull;
         }
@@ -243,5 +247,10 @@ public class ClientMultiThread implements Client {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void newConnection() {
+        try { this.connection = new Connection(ip, 10000); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 }
