@@ -164,7 +164,7 @@ class ArmazemDadosPartilhados {
             l.unlock();
         }
         try {
-          while (dado.getValue().equals(valueCond)) {
+          while (!(dado.getValue().equals(valueCond))) {
             dado.c.await();
           }
         } finally {
