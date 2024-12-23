@@ -104,30 +104,33 @@ class ConnectionThread implements Runnable{
             String authenticatedId = null;
             while((!authenticated)&&connectionOpen){
                 Message m = connection.receive();
-                if(m.getClass().getSimpleName().equals("Exit")){
-                    connectionOpen = false;
-                    break;
-                }
-                else if(m.getClass().getSimpleName().equals("Register")){
-                    Register r = (Register) m;
-                    credentials.register(r.getID(), r.getPassword());
-                    connection.send(new ResRegister(true));
-                }
-                else if (m.getClass().getSimpleName().equals("Login")){
-                    Login l = (Login) m;
-                    results = new ResultBuffer();
-                    boolean sucess = credentials.login(l.getID(), l.getPassword());
-                    if (sucess){
-                        clients.put(l.getID(), results);
-                        connection.send(new ResLogin(sucess));
-                        authenticated = true;
-                        authenticatedId = l.getID();
-                    }
-                    else{
-                        connection.send(new ResLogin(sucess));
+                if(m!=null){
+                    if(m.getClass().getSimpleName().equals("Exit")){
+                        connectionOpen = false;
                         break;
                     }
+                    else if(m.getClass().getSimpleName().equals("Register")){
+                        Register r = (Register) m;
+                        credentials.register(r.getID(), r.getPassword());
+                        connection.send(new ResRegister(true));
+                    }
+                    else if (m.getClass().getSimpleName().equals("Login")){
+                        Login l = (Login) m;
+                        results = new ResultBuffer();
+                        boolean sucess = credentials.login(l.getID(), l.getPassword());
+                        if (sucess){
+                            clients.put(l.getID(), results);
+                            connection.send(new ResLogin(sucess));
+                            authenticated = true;
+                            authenticatedId = l.getID();
+                        }
+                        else{
+                            connection.send(new ResLogin(sucess));
+                            break;
+                        }
+                    }
                 }
+                else connectionOpen = false;
             }
             if(authenticated&&connectionOpen){
                 sendResults = new Thread(new ConnectionResultsThread(connection, results));
