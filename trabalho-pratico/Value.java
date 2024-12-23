@@ -2,11 +2,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ResGet extends Message {
+public class Value extends Message {
     byte[] value;
 
     
-    public ResGet(byte[] value){
+    public Value(byte[] value){
         this.value=value;
     }
     
@@ -24,18 +24,18 @@ public class ResGet extends Message {
 
     public static Message deserialize(DataInputStream in)throws IOException {
         try{
-            ResGet resGet;
+            Value message;
             Long id = in.readLong();
             boolean b = in.readBoolean();
             if (b == true) {
                 int tamanho=in.readInt();
                 byte[] resposta=new byte[tamanho];
                 in.read(resposta, 0, tamanho);
-                resGet = new ResGet(resposta);
+                message = new Value(resposta);
             }
-            else resGet = new ResGet(null);
-            resGet.setId(id);
-            return resGet;
+            else message = new Value(null);
+            message.setId(id);
+            return message;
         }catch (IOException e){
             return null;
         }

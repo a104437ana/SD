@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ResMultiGet extends Message {
+public class Values extends Message {
     Map<String, byte[]> values;
 
-    public ResMultiGet(Map<String, byte[]> res){
+    public Values(Map<String, byte[]> res){
         this.values=res;
     }
     
@@ -37,9 +37,9 @@ public class ResMultiGet extends Message {
                 in.read(value, 0, tamanho);
                 res.put(key, value);
             }
-            ResMultiGet resMultiGet = new ResMultiGet(res);
-            resMultiGet.setId(id);
-            return resMultiGet;
+            Values message = new Values(res);
+            message.setId(id);
+            return message;
         }catch (IOException e){
             return null;
         }

@@ -28,9 +28,9 @@ public class ClientSingleThread implements Client {
         connection.send(mc); //envia a mensagem
         //procura a resposta
         Message response=connection.receive().getMessage();
-        if (response instanceof ResRegister) {
-            ResRegister res = (ResRegister) response;
-            return res.getResult();
+        if (response instanceof Response) {
+            Response res = (Response) response;
+            return res.requestAccepted();
         }
         return false;
     }
@@ -47,9 +47,9 @@ public class ClientSingleThread implements Client {
         connection.send(mc); //envia a mensagem
         //procura a resposta
         Message response=connection.receive().getMessage();
-        if (response instanceof ResLogin) {
-            ResLogin res = (ResLogin) response;
-            boolean sucessfull = res.getResult();
+        if (response instanceof Response) {
+            Response res = (Response) response;
+            boolean sucessfull = res.requestAccepted();
             if (sucessfull) id = user;
             return sucessfull;
         }
@@ -68,7 +68,7 @@ public class ClientSingleThread implements Client {
         MessageContainer mc = new MessageContainer(put);
         connection.send(mc);
         Message response=connection.receive().getMessage();
-        ResPut res = (ResPut) response;
+        Success res = (Success) response;
     }
 
     /**
@@ -83,7 +83,7 @@ public class ClientSingleThread implements Client {
         connection.send(mc); //envia a mensagem
         //procura a resposta
         Message response=connection.receive().getMessage();
-        ResGet res = (ResGet) response;
+        Value res = (Value) response;
         return res.getValue();
     }
 
@@ -97,7 +97,7 @@ public class ClientSingleThread implements Client {
         MessageContainer mc = new MessageContainer(mp);
             connection.send(mc);
             Message response=connection.receive().getMessage();
-            ResMultiPut res = (ResMultiPut) response;
+            Success res = (Success) response;
     }
     /**
      * Método permite a um cliente, depois de autenticado,
@@ -111,7 +111,7 @@ public class ClientSingleThread implements Client {
         connection.send(mc); //envia a mensagem
         //procura a resposta
         Message response=connection.receive().getMessage();
-        ResMultiGet res = (ResMultiGet) response;
+        Values res = (Values) response;
         return res.getPairs();
     }
 
@@ -130,7 +130,7 @@ public class ClientSingleThread implements Client {
         connection.send(mc); //envia a mensagem
         //procura a resposta
         Message response=connection.receive().getMessage();
-        ResGetWhen res = (ResGetWhen) response;
+        Value res = (Value) response;
         return res.getValue();  
     }
     

@@ -31,9 +31,9 @@ public class ClientMultiThread implements Client {
             connection.send(mc);
             Message res = connection.receive().getMessage();
             boolean sucessfull = false;
-            if (res instanceof ResRegister) {
-                ResRegister result = (ResRegister) res;
-                sucessfull = result.getResult();
+            if (res instanceof Response) {
+                Response result = (Response) res;
+                sucessfull = result.requestAccepted();
             }
             return sucessfull;
         }
@@ -49,9 +49,9 @@ public class ClientMultiThread implements Client {
             connection.send(mc);
             Message res = connection.receive().getMessage();
             boolean sucessfull = false;
-            if (res instanceof ResLogin) {
-                ResLogin result = (ResLogin) res;
-                sucessfull = result.getResult();
+            if (res instanceof Response) {
+                Response result = (Response) res;
+                sucessfull = result.requestAccepted();
                 if (sucessfull) {
                     authenticated = true;
                     userId = user;
@@ -74,8 +74,8 @@ public class ClientMultiThread implements Client {
         requestBuffer.queue(message);
         try {
             Message res = (Message) buffer.unqueue();
-            if (res instanceof ResPut) {
-                Message result = (ResPut) res;
+            if (res instanceof Success) {
+                Message result = (Success) res;
                 if (result != null) ;
             }
         }
@@ -93,9 +93,9 @@ public class ClientMultiThread implements Client {
         byte[] value = null;
         try {
             Message res = (Message) buffer.unqueue();
-            ResGet result = null;
-            if (res instanceof ResGet) {
-                result = (ResGet) res;
+            Value result = null;
+            if (res instanceof Value) {
+                result = (Value) res;
                 value = result.getValue();
             }
         }
@@ -113,8 +113,8 @@ public class ClientMultiThread implements Client {
         requestBuffer.queue(message);
         try {
             Message res = (Message) buffer.unqueue();
-            if (res instanceof ResMultiPut) {
-                Message result = (ResMultiPut) res;
+            if (res instanceof Success) {
+                Message result = (Success) res;
                 if (result != null) ;
             }
         }
@@ -132,9 +132,9 @@ public class ClientMultiThread implements Client {
         Map<String,byte[]> pairs = null;
         try {
             Message res = (Message) buffer.unqueue();
-            ResMultiGet result = null;
-            if (res instanceof ResMultiGet) {
-                result = (ResMultiGet) res;
+            Values result = null;
+            if (res instanceof Values) {
+                result = (Values) res;
                 pairs = result.getPairs();
             }
         }
@@ -154,9 +154,9 @@ public class ClientMultiThread implements Client {
         byte[] value = null;
         try {
             Message res = (Message) buffer.unqueue();
-            ResGetWhen result = null;
-            if (res instanceof ResGetWhen) {
-                result = (ResGetWhen) res;
+            Value result = null;
+            if (res instanceof Value) {
+                result = (Value) res;
                 value = result.getValue();
             }
         }

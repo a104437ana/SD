@@ -114,7 +114,7 @@ class ConnectionThread implements Runnable{
                     else if(m.getClass().getSimpleName().equals("Register")){
                         Register r = (Register) m;
                         credentials.register(r.getID(), r.getPassword());
-                        connection.send(new MessageContainer(new ResRegister(true)));
+                        connection.send(new MessageContainer(new Response(true)));
                     }
                     else if (m.getClass().getSimpleName().equals("Login")){
                         Login l = (Login) m;
@@ -122,12 +122,12 @@ class ConnectionThread implements Runnable{
                         boolean sucess = credentials.login(l.getID(), l.getPassword());
                         if (sucess){
                             clients.put(l.getID(), results);
-                            connection.send(new MessageContainer(new ResLogin(sucess)));
+                            connection.send(new MessageContainer(new Response(sucess)));
                             authenticated = true;
                             authenticatedId = l.getID();
                         }
                         else{
-                            connection.send(new MessageContainer(new ResLogin(sucess)));
+                            connection.send(new MessageContainer(new Response(sucess)));
                             break;
                         }
                     }
@@ -207,7 +207,7 @@ class RequestThread implements Runnable{
      */
     private Message processMessage(Get message) {
         byte[] value = dataBase.get(message.getKey());
-        Message res = new ResGet(value);
+        Message res = new Value(value);
         res.setId(message.getId());
         return res;
     }
@@ -217,9 +217,8 @@ class RequestThread implements Runnable{
      * @param message
      */
     private Message processMessage(Put message) {
-        boolean success = true;
         dataBase.put(message.getKey(), message.getValue()); // Alterar, método deve retornar um booleano ou dar trow de exception
-        Message res = new ResPut(success);
+        Message res = new Success();
         res.setId(message.getId());
         return res;
     }
@@ -230,7 +229,7 @@ class RequestThread implements Runnable{
      */
     private Message processMessage(MultiGet message) {
         Map<String,byte[]> pairs = dataBase.multiGet(message.getKeys());
-        Message res = new ResMultiGet(pairs);
+        Message res = new Values(pairs);
         res.setId(message.getId());
         return res;
     }
@@ -240,9 +239,8 @@ class RequestThread implements Runnable{
      * @param message
      */
     private Message processMessage(MultiPut message) {
-        boolean success = true;
         dataBase.multiPut(message.getPairs()); // Alterar, método deve retornar um booleano ou dar trow de exception
-        Message res = new ResMultiPut(success);
+        Message res = new Success();
         res.setId(message.getId());
         return res;
     }
@@ -259,7 +257,7 @@ class RequestThread implements Runnable{
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Message res = new ResGetWhen(value);
+        Message res = new Value(value);
         res.setId(message.getId());
         return res;
     }

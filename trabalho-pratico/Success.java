@@ -2,18 +2,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ResMultiPut extends Message {
-    boolean sucess;
+public class Success extends Message {
 
-
-    public ResMultiPut(boolean s){
-        this.sucess=s;
+    public Success(){
     }
 
     public void serialize(DataOutputStream out) throws IOException {
             try{
                 out.writeLong(this.getId());
-                out.writeBoolean(this.sucess);
             }catch (IOException e){
                 throw new IOException(e);
             }
@@ -22,16 +18,12 @@ public class ResMultiPut extends Message {
     public static Message deserialize(DataInputStream in) throws IOException {
         try{
             Long id = in.readLong();
-            boolean estado=in.readBoolean();
-            ResMultiPut resMultiPut = new ResMultiPut(estado);
-            resMultiPut.setId(id);
-            return resMultiPut;
+            Success message = new Success();
+            message.setId(id);
+            return message;
         }catch (IOException e){
             return null;
         }
     }
 
-    public boolean getValue() {
-        return this.sucess;
-    }
 }

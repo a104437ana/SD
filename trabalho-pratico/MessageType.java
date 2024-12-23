@@ -1,18 +1,18 @@
 public enum MessageType {
+    //pedidos de conta
     Register,
     Login,
     Exit,
+    //resposta aos pedidos de conta
+    Response,
+    //querys
     Get,
     Put,
     MultiGet,
     MultiPut,
     GetWhen,
-    ResRegister,
-    ResLogin,
-    ResExit,
-    ResGet,
-    ResPut,
-    ResMultiGet,
-    ResMultiPut,
-    ResGetWhen,
+    //respostas as querys
+    Value,
+    Values,
+    Success
 }
