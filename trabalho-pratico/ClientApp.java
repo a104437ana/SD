@@ -195,9 +195,8 @@ public class ClientApp {
             System.out.print("Put " + (i+1) + " value : ");
             byte[] value = in.nextLine().getBytes();
             pairs.put(key,value);
-            client.multiPut(pairs);
         }
-//        client.multiPut(pairs);
+        client.multiPut(pairs);
         System.out.println("MultiPut efetuado com sucesso");
         Menu.pressEnterToContinue();
     }
