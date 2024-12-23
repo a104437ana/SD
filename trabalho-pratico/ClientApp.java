@@ -156,10 +156,10 @@ public class ClientApp {
             }
             while (exists);
         }
-//        Map<String,byte[]> pairs = client.multiGet(keys);
+        Map<String,byte[]> pairs2 = client.multiGet(keys);
         if (pairs.size() == numberOfPairs) {
             System.out.println("MultiGet efetuado com sucesso");
-            for (Map.Entry<String,byte[]> e : pairs.entrySet()) {
+            for (Map.Entry<String,byte[]> e : pairs2.entrySet()) {
                  String s = String.format("key = %s, value = %s",e.getKey(),new String(e.getValue(),StandardCharsets.UTF_8));
                 System.out.println(s);
             }
@@ -195,6 +195,7 @@ public class ClientApp {
             System.out.print("Put " + (i+1) + " value : ");
             byte[] value = in.nextLine().getBytes();
             pairs.put(key,value);
+            client.multiPut(pairs);
         }
 //        client.multiPut(pairs);
         System.out.println("MultiPut efetuado com sucesso");

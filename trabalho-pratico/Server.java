@@ -105,8 +105,7 @@ class ConnectionThread implements Runnable{
             while((!authenticated)&&connectionOpen){
                 MessageContainer mc = connection.receive();
                 if (mc != null) {
-                Message m = mc.getMessage();
-                if(m!=null){
+                    Message m = mc.getMessage();
                     if(m.getClass().getSimpleName().equals("Exit")){
                         connectionOpen = false;
                         break;
@@ -133,8 +132,6 @@ class ConnectionThread implements Runnable{
                     }
                 }
                 else connectionOpen = false;
-            }
-            else connectionOpen = false;
             }
             if(authenticated&&connectionOpen){
                 sendResults = new Thread(new ConnectionResultsThread(connection, results));
