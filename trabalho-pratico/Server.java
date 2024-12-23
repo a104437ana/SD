@@ -315,11 +315,12 @@ public class Server {
             System.out.println("  java Server <nº máximo de clientes simultâneos>");
             return;
         }
+        ArmazemDadosPartilhados dataBase = new ArmazemDadosPartilhados();
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
         RequestBuffer messages = new RequestBuffer();
 //        System.out.println("Inicializar thread pool"); // Para apagar
-        ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
+        ThreadPool pool = new ThreadPool(clients, messages, dataBase);
 //        System.out.println("Thread pool acabou"); // Para apagar
 
         try{
