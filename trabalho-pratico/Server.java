@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
@@ -53,6 +52,17 @@ class ClientsMap{
             lock.writeLock().unlock();
         }
     }
+    public boolean isActive(String id){
+        boolean res;
+        lock.readLock().lock();
+        try{
+             res = clients.containsKey(id);
+        }
+        finally{
+            lock.readLock().unlock();
+        }
+        return res;
+    }
 }
 
 class AuthenticationMap{
@@ -62,10 +72,14 @@ class AuthenticationMap{
         this.credentials = new HashMap<String, String>();
         this.lock = new ReentrantReadWriteLock();
     }
-    public void register(String id, String password){
+    public boolean register(String id, String password){
         lock.writeLock().lock();
         try{
-            this.credentials.put(id, password);
+            if(this.credentials.containsKey(id)) return false;
+            else{
+                this.credentials.put(id, password);
+                return true;
+            }
         }
         finally{
             lock.writeLock().unlock();
@@ -112,14 +126,14 @@ class ConnectionThread implements Runnable{
                     }
                     else if(m.getClass().getSimpleName().equals("Register")){
                         Register r = (Register) m;
-                        credentials.register(r.getID(), r.getPassword());
-                        connection.send(new MessageContainer(new Response(true)));
+                        boolean sucess = credentials.register(r.getID(), r.getPassword());
+                        connection.send(new MessageContainer(new Response(sucess)));
                     }
                     else if (m.getClass().getSimpleName().equals("Login")){
                         Login l = (Login) m;
-                        results = new ResultBuffer();
-                        boolean sucess = credentials.login(l.getID(), l.getPassword());
+                        boolean sucess = (!clients.isActive(l.getID()))&&(credentials.login(l.getID(), l.getPassword()));
                         if (sucess){
+                            results = new ResultBuffer();
                             clients.put(l.getID(), results);
                             connection.send(new MessageContainer(new Response(sucess)));
                             authenticated = true;
