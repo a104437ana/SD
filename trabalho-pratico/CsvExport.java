@@ -1,28 +1,37 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CsvExport {
 
     private static final String SEPARATOR = ";";
     private static final String NEW_LINE = "\n";
+    private static ReentrantLock lock = new ReentrantLock();
 
-    public String exportDataCsv(List<String[]> data, String directory, String name) {
+    public String exportDataCsv(List<String[]> data, String directory, String name, boolean threaded) {
         File dir = new File(directory);
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        int id = 0;
+        int id = Integer.parseInt(lastId(directory, name));
         String fileName = name + id + ".csv";
-        File file = new File(dir, fileName);
-        while (file.exists()) {
-            id++;
-            fileName = name + id + ".csv";
-            file = new File(dir, fileName);
+//        File file = new File(dir, fileName);
+//        while (file.exists()) {
+//            id++;
+//            fileName = name + id + ".csv";
+//            file = new File(dir, fileName);
+//        }
+        if (threaded) {
+            String thread = "thread" + Long.toString(Thread.currentThread().threadId());
+            fileName = name + id + thread + ".csv";
         }
+        File file = new File(dir, fileName);
 
         try {
             BufferedWriter fw = new BufferedWriter(new FileWriter(file));
@@ -48,6 +57,54 @@ public class CsvExport {
         return fileName;
     }
 
+    private static String lastId(String dir, String fileName) {
+        lock.lock();
+        try {
+            String lastId = "0";
+            File file = new File(dir, fileName);
+            try {
+                if (file.exists()) {
+                    System.out.println("Ficheiro existe");
+                    BufferedReader fr = new BufferedReader(new FileReader(file));
+                    String id;
+                    while ((id = fr.readLine()) != null) {
+                        lastId = id;
+                    }
+                    lastId.replace("\n", "");
+//                    lastId = Integer.toString(Integer.parseInt(lastId) + 1);
+                }
+                else {
+                    System.out.println("Ficheiro nao existe");
+                    file.createNewFile();
+                    BufferedWriter fw = new BufferedWriter(new FileWriter(file, true));
+                    fw.write(lastId + NEW_LINE);
+                    fw.flush();
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            return lastId;
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
+    public static void nextId(String dir, String fileName) {
+        String lastId = lastId(dir, fileName);
+        File file = new File(dir, fileName);
+        lastId = Integer.toString(Integer.parseInt(lastId) + 1);
+        try {
+            BufferedWriter fw = new BufferedWriter(new FileWriter(file, true));
+            fw.write(lastId + NEW_LINE);
+            fw.flush();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         String[] header = {"op", "time", "type"};
         String[] line1 = {"1", "20", "0"};
@@ -59,6 +116,7 @@ public class CsvExport {
         list.add(line2);
 
         CsvExport csvExport = new CsvExport();
-        csvExport.exportDataCsv(list, "tmp", "test");
+//        System.out.println(csvExport.lastId("tmp", "test", false));
+        csvExport.exportDataCsv(list, "tmp", "test", false);
     }
 }

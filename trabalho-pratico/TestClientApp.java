@@ -10,6 +10,7 @@ public class TestClientApp {
     private static final int VALUE_SIZE = 1024;
     private static final String DIRECTORY = "tmp";
     private static final String NAME = "test";
+    private static String TESTNAME = "";
     private String fileName = "";
     private static final String USER = "test";
     private static final String PASSWORD = "test";
@@ -47,10 +48,10 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
-        String testName = NAME + "Put" + thread;
+//        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        TESTNAME = NAME + "Put";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
         return end.getTime() - start.getTime();
     }
 
@@ -84,10 +85,10 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
-        String testName = NAME + "Get" + thread;
+//        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        TESTNAME = NAME + "Get";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
         return end.getTime() - start.getTime();
     }
 
@@ -139,10 +140,10 @@ public class TestClientApp {
 
         client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
-        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
-        String testName = NAME + "PutGet" + thread;
+//        String thread = MULTI_CLIENT ? ("thread" + Long.toString(Thread.currentThread().threadId())) : "";
+        TESTNAME = NAME + "PutGet";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, testName);
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
         return end.getTime() - start.getTime();
     }
 
@@ -234,8 +235,9 @@ public class TestClientApp {
         catch (IOException e) {
             e.printStackTrace();
         }
-        client.register(USER, PASSWORD);
-        client.authenticate(USER, PASSWORD);
+        String userName = USER + Long.toString(Thread.currentThread().threadId());
+        client.register(userName, PASSWORD);
+        client.authenticate(userName, PASSWORD);
         return client;
     }
 
@@ -310,6 +312,7 @@ public class TestClientApp {
                 if (typeTest[GET]) time = testClient.getWorkload(ops, access, topOps, clients);
                 else if (typeTest[PUT]) time = testClient.putWorkload(ops, access, topOps, clients);
                 else if (typeTest[PUTGET]) time = testClient.putGetWorkload(ops, ratio, access, topOps, clients);
+                CsvExport.nextId(DIRECTORY, TESTNAME);
                 String dirFileName = "./" + DIRECTORY + "/" + testClient.fileName;
                 TestClientApp.testsEndMessage(time, dirFileName);
             }
@@ -318,17 +321,17 @@ public class TestClientApp {
 
     private static void errorMessage(String error) {
         System.out.println(error);
-        System.out.println("  java TestClientApp <tipo de workload> <numero de operacões> <distribuicao> <numero de clientes> <tipo do cliente>");
+        System.out.println("  java TestClientApp <tipo de workload> <numero de operacoes> <distribuicao> <numero de clientes> <tipo do cliente>");
         System.out.println("    Tipo de workload:");
         System.out.println("      -g : Apenas de Gets");
         System.out.println("      -p : Apenas de Puts");
-        System.out.println("      -pg <int> : Puts e Gets com parâmetro para percentagem de");
+        System.out.println("      -pg <int> : Puts e Gets com parametro para percentagem de");
         System.out.println("                  Puts em relacao a Gets, de 0 a 100");
-        System.out.println("    Numero de operacões:");
-        System.out.println("      <int> : Numero de operacões a realizar");
+        System.out.println("    Numero de operacoes:");
+        System.out.println("      <int> : Numero de operacoes a realizar");
         System.out.println("    Distribuicao:");
-        System.out.println("      -d <int> <int> : primeiro parâmetro percentagem de acessos ao top, de 0 a 100");
-        System.out.println("                       segundo parâmetro percentagem do top, de 0 a 100");
+        System.out.println("      -d <int> <int> : primeiro parametro percentagem de acessos ao top, de 0 a 100");
+        System.out.println("                       segundo parametro percentagem do top, de 0 a 100");
         System.out.println("                       Distribuicao por defeito 50 50, 50% acessos a 50% do dataset");
         System.out.println("    Numero de clientes:");
         System.out.println("      -c <int> : Numero de clientes singlethread ou threads de cliente multithread");
@@ -339,7 +342,7 @@ public class TestClientApp {
     }
 
     private static void errorNumberFormat(String type) {
-        if (type.equals("ops")) System.out.println("Numero de operacões invalido, deve ser um inteiro positivo");
+        if (type.equals("ops")) System.out.println("Numero de operacoes invalido, deve ser um inteiro positivo");
         else if (type.equals("access")) System.out.println("Percentagem de acessos invalida, deve ser um inteiro entre 0 e 100");
         else if (type.equals("top")) System.out.println("Percentagem de top invalida, deve ser um inteiro entre 0 e 100");
         else if (type.equals("ratio")) System.out.println("Percentagem de Puts em relacao a Gets invalida, deve ser um inteiro entre 0 e 100");
