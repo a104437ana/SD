@@ -113,55 +113,59 @@ class ConnectionThread implements Runnable{
         this.buffer = buffer;
     }
     public void run(){
-        boolean connectionOpen = true;
+            boolean connectionOpen = true;
             boolean authenticated = false;
             String authenticatedId = null;
-            while((!authenticated)&&connectionOpen){
-                MessageContainer mc = connection.receive();
-                if (mc != null) {
-                    Message m = mc.getMessage();
-                    if(m.getClass().getSimpleName().equals("Exit")){
-                        connectionOpen = false;
-                        break;
-                    }
-                    else if(m.getClass().getSimpleName().equals("Register")){
-                        Register r = (Register) m;
-                        boolean sucess = credentials.register(r.getID(), r.getPassword());
-                        connection.send(new MessageContainer(new Response(sucess)));
-                    }
-                    else if (m.getClass().getSimpleName().equals("Login")){
-                        Login l = (Login) m;
-                        boolean sucess = (!clients.isActive(l.getID()))&&(credentials.login(l.getID(), l.getPassword()));
-                        if (sucess){
-                            results = new ResultBuffer();
-                            clients.put(l.getID(), results);
-                            connection.send(new MessageContainer(new Response(sucess)));
-                            authenticated = true;
-                            authenticatedId = l.getID();
-                        }
-                        else{
-                            connection.send(new MessageContainer(new Response(sucess)));
+            while(connectionOpen){
+                while((!authenticated)&&connectionOpen){
+                    MessageContainer mc = connection.receive();
+                    if (mc != null) {
+                        Message m = mc.getMessage();
+                        if(m.getClass().getSimpleName().equals("Exit")){
+                            connectionOpen = false;
                             break;
                         }
+                        else if(m.getClass().getSimpleName().equals("Register")){
+                            Register r = (Register) m;
+                            boolean sucess = credentials.register(r.getID(), r.getPassword());
+                            connection.send(new MessageContainer(new Response(sucess)));
+                        }
+                        else if (m.getClass().getSimpleName().equals("Login")){
+                            Login l = (Login) m;
+                            boolean sucess = (!clients.isActive(l.getID()))&&(credentials.login(l.getID(), l.getPassword()));
+                            if (sucess){
+                                results = new ResultBuffer();
+                                clients.put(l.getID(), results);
+                                connection.send(new MessageContainer(new Response(sucess)));
+                                authenticated = true;
+                                authenticatedId = l.getID();
+                            }
+                            else{
+                                connection.send(new MessageContainer(new Response(sucess)));
+                                connectionOpen = false;
+                                break;
+                            }
+                        }
                     }
+                    else connectionOpen = false;
                 }
-                else connectionOpen = false;
-            }
-            if(authenticated&&connectionOpen){
-                sendResults = new Thread(new ConnectionResultsThread(connection, results));
-                sendResults.start();
-                while(connectionOpen){
-                    Message receive = connection.receive().getMessage();
-                    if(receive.getClass().getSimpleName().equals("Exit")){
-                        Exit e = (Exit) receive;
-                        connectionOpen = false;
-                        sendResults.interrupt();
-                        clients.remove(e.getID());
-                        break;
-                    }
-                    else{
-                        Request r = new Request(authenticatedId, receive);
-                        buffer.queue(r);
+                if(authenticated&&connectionOpen){
+                    sendResults = new Thread(new ConnectionResultsThread(connection, results));
+                    sendResults.start();
+                    while(connectionOpen&&authenticated){
+                        Message receive = connection.receive().getMessage();
+                        if(receive.getClass().getSimpleName().equals("Exit")){
+                            Exit e = (Exit) receive;
+                            sendResults.interrupt();
+                            clients.remove(e.getID());
+                            authenticated = false;
+                            authenticatedId = null;
+                            break;
+                        }
+                        else{
+                            Request r = new Request(authenticatedId, receive);
+                            buffer.queue(r);
+                        }
                     }
                 }
             }
