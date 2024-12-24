@@ -165,4 +165,8 @@ public class ClientSingleThread implements Client {
         try { this.connection = new Connection(ip, 10000); }
         catch (IOException e) { e.printStackTrace(); }
     }
+
+    public String getUserId() {
+        return id;
+    }
 }

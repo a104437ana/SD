@@ -63,4 +63,5 @@ public interface Client {
 
 
     public void logout();
+    public String getUserId();
 }

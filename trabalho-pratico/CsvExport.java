@@ -13,6 +13,7 @@ public class CsvExport {
     private static final String SEPARATOR = ";";
     private static final String NEW_LINE = "\n";
     private static ReentrantLock lock = new ReentrantLock();
+    private String optionalName = "";
 
     public String exportDataCsv(List<String[]> data, String directory, String name, boolean threaded) {
         File dir = new File(directory);
@@ -20,10 +21,10 @@ public class CsvExport {
             dir.mkdirs();
         }
         int id = Integer.parseInt(lastId(directory, name));
-        String fileName = name + id + ".csv";
+        String fileName = name + id + optionalName + ".csv";
         if (threaded) {
             String thread = "thread" + Long.toString(Thread.currentThread().threadId());
-            fileName = name + id + thread + ".csv";
+            fileName = name + id + optionalName + thread + ".csv";
         }
         File file = new File(dir, fileName);
 
@@ -94,6 +95,10 @@ public class CsvExport {
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setOptionalName(String name) {
+        optionalName = name;
     }
 
     public static void main(String[] args) {

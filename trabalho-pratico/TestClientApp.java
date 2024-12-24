@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +13,19 @@ public class TestClientApp {
     private static final String NAME = "test";
     private static String TESTNAME = "";
     private String fileName = "";
-    private static final String USER = "test";
+    private static final String USER = "client";
     private static final String PASSWORD = "test";
     private static final int NUMBER_TESTS = 3;
     private static final int GET = 0;
     private static final int PUT = 1;
     private static final int PUTGET = 2;
     private static boolean IS_MULTITHREADED = false;
+    private static int MULTITHREADED_THREADS = 1;
     private static float maxTime = 0;
     private static ReentrantLock lock = new ReentrantLock();
     private static boolean MULTI_CLIENT = false;
 
-    private float putWorkload(long ops, int access, long top) {
-        Client client = startClient(false);
+    private float putWorkload(long ops, int access, long top, Client client) {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
@@ -42,25 +43,21 @@ public class TestClientApp {
             data.add(line);
         }
 
-        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "Put";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
+        csvExport.setOptionalName(client.getUserId());
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
         return end.getTime() - start.getTime();
     }
 
-    private float getWorkload(long ops, int access, long top) {
-        Client client = startClient(false);
+    private float getWorkload(long ops, int access, long top, Client client) {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
         String[] header = new String[] {"op", "time", "key"};
         data.add(header);
-
-        // Inicializacao dos dados no servidor
-        dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -73,25 +70,21 @@ public class TestClientApp {
             data.add(line);
         }
 
-        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "Get";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
+        csvExport.setOptionalName(client.getUserId());
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
         return end.getTime() - start.getTime();
     }
 
-    private float putGetWorkload(long ops, int ratio, int access, long top) {
-        Client client = startClient(false);
+    private float putGetWorkload(long ops, int ratio, int access, long top, Client client) {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
         String[] header = new String[] {"op", "time", "key", "type"};
         data.add(header);
-
-        // Inicializacao dos dados no servidor
-        dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -116,11 +109,11 @@ public class TestClientApp {
             data.add(line);
         }
 
-        client.logout();
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "PutGet";
         CsvExport csvExport = new CsvExport();
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT);
+        csvExport.setOptionalName(client.getUserId());
+        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
         return end.getTime() - start.getTime();
     }
 
@@ -142,6 +135,7 @@ public class TestClientApp {
     }
 
     private float getWorkload(long ops, int access, long top, int clients) {
+        dataInitialization(ops);
         Thread[] threads = new Thread[clients];
         for (int i = 0; i < clients; i++) {
             threads[i] = new Thread(new Worker(GET, ops, -1, access, top));
@@ -159,6 +153,7 @@ public class TestClientApp {
     }
 
     private float putGetWorkload(long ops, int ratio, int access, long top, int clients) {
+        dataInitialization(ops);
         Thread[] threads = new Thread[clients];
         for (int i = 0; i < clients; i++) {
             threads[i] = new Thread(new Worker(PUTGET, ops, ratio, access, top));
@@ -190,16 +185,38 @@ public class TestClientApp {
         }
         public void run() {
             float time = 0;
-            if (type == GET) time = getWorkload(ops, access, top);
-            else if (type == PUT) time = putWorkload(ops, access, top);
-            else if (type == PUTGET) time = putGetWorkload(ops, ratio, access, top);
+            Client client = startClient(IS_MULTITHREADED);
+            if (IS_MULTITHREADED) time = runMultiThreaded(client);
+            else time = runTest(client, ops);
+            client.logout();
             lock.lock();
-            try{
-                if (time > maxTime) maxTime = time; 
+            try{ if (time > maxTime) maxTime = time; }
+            finally { lock.unlock(); }
+        }
+        private float runMultiThreaded(Client client) {
+            Timestamp start = new Timestamp(System.currentTimeMillis());
+            Thread[] threads = new Thread[MULTITHREADED_THREADS];
+            for (int i = 0; i < MULTITHREADED_THREADS; i++) {
+                threads[i] = new Thread() {
+                    public void run() { runTest(client, ops); }
+                };
+                threads[i].start();
             }
-            finally {
-                lock.unlock();
+            try {
+                for (int i = 0; i < MULTITHREADED_THREADS; i++) {
+                    threads[i].join();
+                }
             }
+            catch (InterruptedException e) { e.printStackTrace(); }
+            Timestamp end = new Timestamp(System.currentTimeMillis());
+            return end.getTime() - start.getTime();
+        }
+        public float runTest(Client client, long operations) {
+            float time = 0;
+            if (type == GET) time = getWorkload(operations, access, top, client);
+            else if (type == PUT) time = putWorkload(operations, access, top, client);
+            else if (type == PUTGET) time = putGetWorkload(operations, ratio, access, top, client);
+            return time;
         }
     }
 
@@ -218,10 +235,21 @@ public class TestClientApp {
         return client;
     }
 
-    private void dataInitialization(Client client, long ops, byte[] value) {
-        for (long i = 0; i < ops; i++) {
-            String key = Long.toString(i);
-            client.put(key, value);
+    private void dataInitialization(long ops) {
+        try {
+            byte[] value = new byte[VALUE_SIZE];
+            Client client = new ClientSingleThread();
+            String userName = "testDataInitialization";
+            client.register(userName, PASSWORD);
+            client.authenticate(userName, PASSWORD);
+            for (long i = 0; i < ops; i++) {
+                String key = Long.toString(i);
+                client.put(key, value);
+            }
+            client.logout();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -256,7 +284,7 @@ public class TestClientApp {
                     else if (args[i].equals("-g")) test = GET;
                     else if (args[i].equals("-p")) test = PUT;
                     else if (args[i].equals("-pg")) test = PUTGET;
-                    else if (args[i].equals("-m")) IS_MULTITHREADED = true;
+                    else if (args[i].equals("-m")) { IS_MULTITHREADED = true; MULTITHREADED_THREADS = Integer.parseInt(args[++i]); }
                     else if (args[i].equals("-s")) IS_MULTITHREADED = false;
                     else incorrectArguments++;
                     if (test >= 0) {

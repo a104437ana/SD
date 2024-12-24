@@ -226,11 +226,14 @@ public class ClientMultiThread implements Client {
         class ReceiveThread implements Runnable {
             public void run() {
                 while (!Thread.interrupted()) {
-                    Message message = connection.receive().getMessage();
-                    if (message != null) {
-                        long id = message.getId();
-                        Buffer buffer = resultBuffer.get(id);
-                        buffer.queue(message);
+                    MessageContainer mc = connection.receive();
+                    if (mc != null) {
+                        Message message = mc.getMessage();
+                        if (message != null) {
+                            long id = message.getId();
+                            Buffer buffer = resultBuffer.get(id);
+                            buffer.queue(message);
+                        }
                     }
                 }
             }
@@ -252,5 +255,9 @@ public class ClientMultiThread implements Client {
     private void newConnection() {
         try { this.connection = new Connection(ip, 10000); }
         catch (IOException e) { e.printStackTrace(); }
+    }
+
+    public String getUserId() {
+        return userId;
     }
 }
