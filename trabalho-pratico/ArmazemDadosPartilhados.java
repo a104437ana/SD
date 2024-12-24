@@ -154,6 +154,7 @@ class ArmazemDadosPartilhados {
 
     public byte[] getWhen(String key, String keyCond, byte[] valueCond) throws InterruptedException {
         Dado dado;
+        byte[] value;
         l.lock();
         try {
             //if (dado == null) return null;
@@ -168,9 +169,22 @@ class ArmazemDadosPartilhados {
           while (!(Arrays.equals(dado.getValue(),valueCond))) {
             dado.c.await();
           }
+          l.lock();
         } finally {
             dado.l.unlock();
         }
-        return get(key);
+        try {
+            dado = map.get(key);
+            if (dado == null) return null;
+            dado.l.lock();
+        } finally {
+            l.unlock();
+        }
+        try {
+            value = dado.getValue();
+        } finally {
+            dado.l.unlock();
+        }
+        return value;
     }
 }
