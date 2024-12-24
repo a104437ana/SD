@@ -1,6 +1,6 @@
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -90,18 +90,19 @@ public class ClientApp {
     private void menuGet() {
         Menu.clearTerminal();
         System.out.println("\n --- Menu Get --- ");
-        System.out.print("Get key : ");
+        System.out.print("Key : ");
         String key = in.nextLine();
 //        byte[] value = new byte[10];
         byte[] value = client.get(key);
         // Falta alterar para mostrar o value, para ficheiro ou no ecrã
-        if (value != null) {
-            String s = String.format("Get efetuado com sucesso, value = %s",new String(value,StandardCharsets.UTF_8));
+        if (value != null) { //Get efetuado com sucesso
+            String s = String.format("Value : %s",new String(value,StandardCharsets.UTF_8));
             System.out.println(s);
             Menu.pressEnterToContinue();
         }
-        else {
-            System.out.println("Get Falhou");
+        else { //Get falhou
+            String s = String.format("Esta key não tem um value associado");
+            System.out.println(s);
             Menu.pressEnterToContinue();
         }
     }
@@ -109,9 +110,9 @@ public class ClientApp {
     private void menuPut() {
         Menu.clearTerminal();
         System.out.println("\n --- Menu Put --- ");
-        System.out.print("Put key : ");
+        System.out.print("Key : ");
         String key = in.nextLine();
-        System.out.print("Put value : ");
+        System.out.print("Value : ");
         // Talvez alterar para ter a opção de enviar um ficheiro
         byte[] value = in.nextLine().getBytes();
         client.put(key, value);
@@ -136,17 +137,17 @@ public class ClientApp {
             }
         }
         while (numberOfPairs == -1);
-        Set<String> keys = new HashSet<>();
+        Set<String> keys = new LinkedHashSet<>();
         Map<String,byte[]> pairs = new HashMap<>(); // Depois retirar, só para poder testar
         for (int i = 0; i < numberOfPairs; i++) {
             boolean exists = true;
             do {
-                System.out.print("Get " + (i+1) + " key : ");
+                System.out.print((i+1) + ".ª key : ");
                 String key = in.nextLine();
                 exists = keys.contains(key);
                 if (exists) {
-                    System.out.println("Chave já foi introduzida");
-                    System.out.println("Introduza uma nova chave");
+                    System.out.println("Esta key já foi introduzida");
+                    System.out.println("Introduza uma nova key");
                     Menu.pressEnterToContinue();
                 }
                 else {
@@ -157,18 +158,20 @@ public class ClientApp {
             while (exists);
         }
         Map<String,byte[]> pairs2 = client.multiGet(keys);
-        if (pairs.size() == numberOfPairs) {
-            System.out.println("MultiGet efetuado com sucesso");
-            for (Map.Entry<String,byte[]> e : pairs2.entrySet()) {
-                 String s = String.format("key = %s, value = %s",e.getKey(),new String(e.getValue(),StandardCharsets.UTF_8));
+        int i = 0;
+        for (String k : keys) {
+            byte[] v = pairs2.get(k);
+            if (v != null) {
+                String s = String.format("%d.º value : %s",(i+1),new String(v,StandardCharsets.UTF_8));
                 System.out.println(s);
             }
-            Menu.pressEnterToContinue();
+            else {
+                String s = String.format("%d.ª key não tem um value associado",(i+1));
+                System.out.println(s);
+            }
+            i++;
         }
-        else {
-            System.out.println("MultiGet Falhou");
-            Menu.pressEnterToContinue();
-        }
+        Menu.pressEnterToContinue();
     }
 
     private void menuMultiPut() {
@@ -190,11 +193,22 @@ public class ClientApp {
         while (numberOfPairs == -1);
         Map<String,byte[]> pairs = new HashMap<>();
         for (int i = 0; i < numberOfPairs; i++) {
-            System.out.print("Put " + (i+1) + " key : ");
-            String key = in.nextLine();
-            System.out.print("Put " + (i+1) + " value : ");
-            byte[] value = in.nextLine().getBytes();
-            pairs.put(key,value);
+            boolean exists = true;
+            do {
+                System.out.print((i+1) + ".ª key : ");
+                String key = in.nextLine();
+                exists = (pairs.get(key) != null);
+                if (exists) {
+                    System.out.println("Esta key já foi introduzida");
+                    System.out.println("Introduza uma nova key");
+                    Menu.pressEnterToContinue();
+                }   
+                else {
+                    System.out.print((i+1) + ".º value : ");
+                    byte[] value = in.nextLine().getBytes();
+                    pairs.put(key,value);
+                }
+            } while(exists);
         }
         client.multiPut(pairs);
         System.out.println("MultiPut efetuado com sucesso");
@@ -204,21 +218,23 @@ public class ClientApp {
     private void menuGetWhen() {
         Menu.clearTerminal();
         System.out.println("\n --- Menu GetWhen --- ");
-        System.out.print("Get key : ");
+        System.out.print("Key : ");
         String key = in.nextLine();
-        System.out.print("Get key condition : ");
+        System.out.print("Key condition : ");
         String keyCond = in.nextLine();
-        System.out.print("Get value condition : ");
+        System.out.print("Value condition : ");
         byte[] valueCond = in.nextLine().getBytes();
 //        byte[] value = new byte[10];
         byte[] value = client.getWhen(key,keyCond,valueCond);
         // Falta alterar para mostrar o value, para ficheiro ou no ecrã
         if (value != null) {
-            System.out.println("GetWhen efetuado com sucesso");
+            String s = String.format("Value : %s",new String(value,StandardCharsets.UTF_8));
+            System.out.println(s);
             Menu.pressEnterToContinue();
         }
         else {
-            System.out.println("GetWhen Falhou");
+            String s = String.format("Esta key não tem um value associado");
+            System.out.println(s);
             Menu.pressEnterToContinue();
         }
     }
