@@ -311,7 +311,7 @@ public class Server {
             }
         }
         else {
-            System.out.println("Número de argumentos inválido");
+            System.out.println("Numero de argumentos inválido");
             System.out.println("  java Server <nº máximo de clientes simultâneos>");
             return;
         }

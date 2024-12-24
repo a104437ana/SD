@@ -63,7 +63,7 @@ public class TestClientApp {
         String[] header = new String[] {"op", "time", "key"};
         data.add(header);
 
-        // Inicialização dos dados no servidor
+        // Inicializacao dos dados no servidor
         dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
@@ -100,7 +100,7 @@ public class TestClientApp {
         String[] header = new String[] {"op", "time", "key", "type"};
         data.add(header);
 
-        // Inicialização dos dados no servidor
+        // Inicializacao dos dados no servidor
         dataInitialization(client, ops, value);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
@@ -257,7 +257,7 @@ public class TestClientApp {
     public static void main(String[] args) {
         TestClientApp testClient = new TestClientApp();
         if (args.length < 2) {
-            TestClientApp.errorMessage("Número de argumentos inválido");
+            TestClientApp.errorMessage("Numero de argumentos invalido");
         }
         else {
             int incorrectArguments = 0;
@@ -290,12 +290,12 @@ public class TestClientApp {
                 }
             }
             catch (NumberFormatException e) {
-                TestClientApp.errorMessage("Argumentos inválidos");
+                TestClientApp.errorMessage("Argumentos invalidos");
                 return;
             }
-            if (incorrectArguments > 0) TestClientApp.errorMessage("Argumentos inválidos");
-            else if (invalidCombination) TestClientApp.errorMessage("Combinação de argumentos inválida");
-            else if (!type) TestClientApp.errorMessage("Tipo de workload inválido");
+            if (incorrectArguments > 0) TestClientApp.errorMessage("Argumentos invalidos");
+            else if (invalidCombination) TestClientApp.errorMessage("Combinacao de argumentos invalida");
+            else if (!type) TestClientApp.errorMessage("Tipo de workload invalido");
             else if (ops < 0) TestClientApp.errorNumberFormat("ops");
             else if (access < 0 || access > 100) TestClientApp.errorMessage("access");
             else if (top < 0 || top > 100) TestClientApp.errorMessage("top");
@@ -318,20 +318,20 @@ public class TestClientApp {
 
     private static void errorMessage(String error) {
         System.out.println(error);
-        System.out.println("  java TestClientApp <tipo de workload> <número de operações> <distribuição> <número de clientes> <tipo do cliente>");
+        System.out.println("  java TestClientApp <tipo de workload> <numero de operacões> <distribuicao> <numero de clientes> <tipo do cliente>");
         System.out.println("    Tipo de workload:");
         System.out.println("      -g : Apenas de Gets");
         System.out.println("      -p : Apenas de Puts");
         System.out.println("      -pg <int> : Puts e Gets com parâmetro para percentagem de");
-        System.out.println("                  Puts em relação a Gets, de 0 a 100");
-        System.out.println("    Número de operações:");
-        System.out.println("      <int> : Número de operações a realizar");
-        System.out.println("    Distribuição:");
+        System.out.println("                  Puts em relacao a Gets, de 0 a 100");
+        System.out.println("    Numero de operacões:");
+        System.out.println("      <int> : Numero de operacões a realizar");
+        System.out.println("    Distribuicao:");
         System.out.println("      -d <int> <int> : primeiro parâmetro percentagem de acessos ao top, de 0 a 100");
         System.out.println("                       segundo parâmetro percentagem do top, de 0 a 100");
-        System.out.println("                       Distribuição por defeito 50 50, 50% acessos a 50% do dataset");
-        System.out.println("    Número de clientes:");
-        System.out.println("      -c <int> : Número de clientes singlethread ou threads de cliente multithread");
+        System.out.println("                       Distribuicao por defeito 50 50, 50% acessos a 50% do dataset");
+        System.out.println("    Numero de clientes:");
+        System.out.println("      -c <int> : Numero de clientes singlethread ou threads de cliente multithread");
         System.out.println("                 Valor por defeito 1");
         System.out.println("    Tipo de cliente:");
         System.out.println("      -m : Cliente multithread");
@@ -339,10 +339,10 @@ public class TestClientApp {
     }
 
     private static void errorNumberFormat(String type) {
-        if (type.equals("ops")) System.out.println("Número de operações inválido, deve ser um inteiro positivo");
-        else if (type.equals("access")) System.out.println("Percentagem de acessos inválida, deve ser um inteiro entre 0 e 100");
-        else if (type.equals("top")) System.out.println("Percentagem de top inválida, deve ser um inteiro entre 0 e 100");
-        else if (type.equals("ratio")) System.out.println("Percentagem de Puts em relação a Gets inválida, deve ser um inteiro entre 0 e 100");
+        if (type.equals("ops")) System.out.println("Numero de operacões invalido, deve ser um inteiro positivo");
+        else if (type.equals("access")) System.out.println("Percentagem de acessos invalida, deve ser um inteiro entre 0 e 100");
+        else if (type.equals("top")) System.out.println("Percentagem de top invalida, deve ser um inteiro entre 0 e 100");
+        else if (type.equals("ratio")) System.out.println("Percentagem de Puts em relacao a Gets invalida, deve ser um inteiro entre 0 e 100");
     }
 
     private static void testsStartMessage() {

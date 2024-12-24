@@ -32,7 +32,7 @@ public class Menu {
         this.handlers = new ArrayList<>();
         for (String s : options) {
             this.preConditions.add(() -> true);
-            this.handlers.add(() -> {System.out.println("\nOpção não implementada"); pressEnterToContinue();});
+            this.handlers.add(() -> {System.out.println("\nOpcao nao implementada"); pressEnterToContinue();});
         }
     }
 
@@ -51,7 +51,7 @@ public class Menu {
             show();
             op = readOption();
             if (op > 0 && !preConditions.get(op-1).validate()) {
-                System.out.println("Opção indisponível");
+                System.out.println("Opcao indisponivel");
                 pressEnterToContinue();
             }
             else if (op > 0) {
@@ -75,7 +75,7 @@ public class Menu {
     public int readOption() {
         int op;
 
-        System.out.print("Opção : ");
+        System.out.print("Opcao : ");
         try {
             while (!in.hasNextLine()) {}
             String line = in.nextLine();
@@ -85,7 +85,7 @@ public class Menu {
             op = -1;
         }
         if (op < 0 || op > options.size()) {
-            System.out.println("Opção inválida");
+            System.out.println("Opcao invalida");
             op = -1;
             pressEnterToContinue();
         }

@@ -46,7 +46,6 @@ public class ClientApp {
         String userName = in.nextLine();
         System.out.print("Password : ");
         String password = in.nextLine();
-//        AUTHENTICATED = true;
         AUTHENTICATED = client.authenticate(userName, password);
         if (AUTHENTICATED) {
             String[] menuInicialOps = new String[] {"Get", "Put", "MultiGet", "MultiPut", "GetWhen"};
@@ -63,7 +62,7 @@ public class ClientApp {
             client.logout();
         }
         else {
-            System.out.println("Autenticação falhou");
+            System.out.println("Autenticacao falhou");
             Menu.pressEnterToContinue();
         }
     }
@@ -75,7 +74,6 @@ public class ClientApp {
         String userName = in.nextLine();
         System.out.print("Password : ");
         String password = in.nextLine();
-//        boolean registed = true;
         boolean registed = client.register(userName, password);
         if (registed) {
             System.out.println("Registado com sucesso");
@@ -92,7 +90,6 @@ public class ClientApp {
         System.out.println("\n --- Menu Get --- ");
         System.out.print("Key : ");
         String key = in.nextLine();
-//        byte[] value = new byte[10];
         byte[] value = client.get(key);
         // Falta alterar para mostrar o value, para ficheiro ou no ecrã
         if (value != null) { //Get efetuado com sucesso
@@ -101,7 +98,7 @@ public class ClientApp {
             Menu.pressEnterToContinue();
         }
         else { //Get falhou
-            String s = String.format("Esta key não tem um value associado");
+            String s = String.format("Esta key nao tem um value associado");
             System.out.println(s);
             Menu.pressEnterToContinue();
         }
@@ -125,13 +122,13 @@ public class ClientApp {
         do {
             Menu.clearTerminal();
             System.out.println("\n --- Menu MultiGet --- ");
-            System.out.print("Número de pares : ");
+            System.out.print("Numero de pares : ");
             String numPairs = in.nextLine();
             try {
                 numberOfPairs = Integer.parseInt(numPairs);
             }
             catch (NumberFormatException e) {
-                System.out.println("Número de pares inválido");
+                System.out.println("Numero de pares invalido");
                 numberOfPairs = -1;
                 Menu.pressEnterToContinue();
             }
@@ -146,7 +143,7 @@ public class ClientApp {
                 String key = in.nextLine();
                 exists = keys.contains(key);
                 if (exists) {
-                    System.out.println("Esta key já foi introduzida");
+                    System.out.println("Esta key ja foi introduzida");
                     System.out.println("Introduza uma nova key");
                     Menu.pressEnterToContinue();
                 }
@@ -166,7 +163,7 @@ public class ClientApp {
                 System.out.println(s);
             }
             else {
-                String s = String.format("%d.ª key não tem um value associado",(i+1));
+                String s = String.format("%d.ª key nao tem um value associado",(i+1));
                 System.out.println(s);
             }
             i++;
@@ -179,13 +176,13 @@ public class ClientApp {
         do {
             Menu.clearTerminal();
             System.out.println("\n --- Menu MultiPut --- ");
-            System.out.print("Número de pares : ");
+            System.out.print("Numero de pares : ");
             String numPairs = in.nextLine();
             try {
                 numberOfPairs = Integer.parseInt(numPairs);
             }
             catch (NumberFormatException e) {
-                System.out.println("Número de pares inválido");
+                System.out.println("Numero de pares invalido");
                 numberOfPairs = -1;
                 Menu.pressEnterToContinue();
             }
@@ -199,7 +196,7 @@ public class ClientApp {
                 String key = in.nextLine();
                 exists = (pairs.get(key) != null);
                 if (exists) {
-                    System.out.println("Esta key já foi introduzida");
+                    System.out.println("Esta key ja foi introduzida");
                     System.out.println("Introduza uma nova key");
                     Menu.pressEnterToContinue();
                 }   
@@ -224,16 +221,15 @@ public class ClientApp {
         String keyCond = in.nextLine();
         System.out.print("Value condition : ");
         byte[] valueCond = in.nextLine().getBytes();
-//        byte[] value = new byte[10];
         byte[] value = client.getWhen(key,keyCond,valueCond);
-        // Falta alterar para mostrar o value, para ficheiro ou no ecrã
+        // Falta alterar para mostrar o value, para ficheiro ou no ecra
         if (value != null) {
             String s = String.format("Value : %s",new String(value,StandardCharsets.UTF_8));
             System.out.println(s);
             Menu.pressEnterToContinue();
         }
         else {
-            String s = String.format("Esta key não tem um value associado");
+            String s = String.format("Esta key nao tem um value associado");
             System.out.println(s);
             Menu.pressEnterToContinue();
         }
@@ -254,13 +250,13 @@ public class ClientApp {
                 clientApp.menuInicial();
             }
             else {
-                System.out.println("Argumento inválido");
+                System.out.println("Argumento invalido");
                 System.out.println("  -s : para cliente single thread");
                 System.out.println("  -m : para cliente multi thread");
             }
         }
         else {
-            System.out.println("Número de argumentos inválido");
+            System.out.println("Numero de argumentos invalido");
             System.out.println("  java ClientApp <argumento>");
             System.out.println("    -s : para cliente single thread");
             System.out.println("    -m : para cliente multi thread");
