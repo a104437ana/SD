@@ -34,15 +34,15 @@ public class TestClientApp {
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
         for (long i = 0; i < ops; i++) {
-            long time = System.currentTimeMillis();
+            long time = System.nanoTime();
             String key = Long.toString(getKey(access, top, rand, ops));
 //            ///////////////////// Apenas para testar /////////////////////
 //            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
 //            catch (InterruptedException e) { e.printStackTrace(); }   ////
 //            //////////////////////////////////////////////////////////////
             client.put(key, value);
-            time = System.currentTimeMillis() - time;
-            String[] line = new String[] {Long.toString(i+1), Long.toString(time), key};
+            time = System.nanoTime() - time;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key};
             data.add(line);
         }
 
@@ -71,15 +71,15 @@ public class TestClientApp {
 
         // Falta 99% dos acessos em 1% do dataset
         for (long i = 0; i < ops; i++) {
-            long time = System.currentTimeMillis();
+            long time = System.nanoTime();
             String key = Long.toString(getKey(access, top, rand, ops));
 //            ///////////////////// Apenas para testar /////////////////////
 //            try { Thread.sleep(rand.nextInt(50 - 20) + 20); }         ////
 //            catch (InterruptedException e) { e.printStackTrace(); }   ////
 //            //////////////////////////////////////////////////////////////
             value = client.get(key);
-            time = System.currentTimeMillis() - time;
-            String[] line = new String[] {Long.toString(i+1), Long.toString(time), key};
+            time = System.nanoTime() - time;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key};
             data.add(line);
         }
 
@@ -108,7 +108,7 @@ public class TestClientApp {
 
         // Falta 99% dos acessos em 1% do dataset no get
         for (long i = 0; i < ops; i++) {
-            long time = System.currentTimeMillis();
+            long time = System.nanoTime();
             int r = rand.nextInt(100);
             String key;
             boolean isPut = r < ratio ? true : false;
@@ -133,8 +133,8 @@ public class TestClientApp {
 //                //////////////////////////////////////////////////////////////
                 value = client.get(key);
             }
-            time = System.currentTimeMillis() - time;
-            String[] line = new String[] {Long.toString(i+1), Long.toString(time), key, Boolean.toString(isPut)};
+            time = System.nanoTime() - time;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key, Boolean.toString(isPut)};
             data.add(line);
         }
 

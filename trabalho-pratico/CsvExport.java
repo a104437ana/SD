@@ -21,12 +21,6 @@ public class CsvExport {
         }
         int id = Integer.parseInt(lastId(directory, name));
         String fileName = name + id + ".csv";
-//        File file = new File(dir, fileName);
-//        while (file.exists()) {
-//            id++;
-//            fileName = name + id + ".csv";
-//            file = new File(dir, fileName);
-//        }
         if (threaded) {
             String thread = "thread" + Long.toString(Thread.currentThread().threadId());
             fileName = name + id + thread + ".csv";
@@ -64,17 +58,14 @@ public class CsvExport {
             File file = new File(dir, fileName);
             try {
                 if (file.exists()) {
-                    System.out.println("Ficheiro existe");
                     BufferedReader fr = new BufferedReader(new FileReader(file));
                     String id;
                     while ((id = fr.readLine()) != null) {
                         lastId = id;
                     }
                     lastId.replace("\n", "");
-//                    lastId = Integer.toString(Integer.parseInt(lastId) + 1);
                 }
                 else {
-                    System.out.println("Ficheiro nao existe");
                     file.createNewFile();
                     BufferedWriter fw = new BufferedWriter(new FileWriter(file, true));
                     fw.write(lastId + NEW_LINE);
