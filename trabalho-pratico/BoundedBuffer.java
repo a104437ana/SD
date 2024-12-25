@@ -3,7 +3,7 @@ import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class BoundedBuffer {
+public class BoundedBuffer{
     private int BUFFER_SIZE = 30;
     private Queue<Object> buffer = new ArrayDeque<Object>(BUFFER_SIZE);
     private ReentrantLock lock = new ReentrantLock();
@@ -14,43 +14,35 @@ public class BoundedBuffer {
         this.BUFFER_SIZE = size;
     }
 
-    public void queue(Object r){
+    public void queue(Object o){
         lock.lock();
         try{
             while(buffer.size()==BUFFER_SIZE){
-                if(buffer.size()==BUFFER_SIZE){
-                    bufferFull.await();
-                }
-                else{
-                    buffer.add(r);
-                    bufferEmpty.signalAll();
-                    break;
-                }
+                bufferFull.await();
             }
-        } catch (Exception ignore) { }
+            buffer.add(o);
+            bufferEmpty.signal();
+        } 
+        catch (Exception ignore) { }
         finally{
             lock.unlock();
         }
     }
 
     public Object unqueue(){
-        Object r = null;
+        Object o = null;
         lock.lock();
         try{
             while(buffer.isEmpty()){
-                if(buffer.isEmpty()){
-                    bufferEmpty.await();
-                }
-                else{
-                    r = buffer.remove();
-                    bufferFull.signalAll();
-                    break;
-                }
+                bufferEmpty.await();
             }
-        } catch (Exception ignore) { }
+            o = buffer.remove();
+            bufferFull.signal();
+        } 
+        catch (Exception ignore) { }
         finally{
             lock.unlock();
         }
-        return r;
+        return o;
     }
 }

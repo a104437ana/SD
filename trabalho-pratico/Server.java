@@ -8,17 +8,17 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class ClientsMap{
-    Map<String,ResultBuffer> clients;
+    Map<String,Buffer> clients;
     ReentrantReadWriteLock lock;
     Condition isFull;
     int S;
     public ClientsMap(int S){
-        this.clients = new HashMap<String, ResultBuffer>(S);
+        this.clients = new HashMap<String, Buffer>(S);
         this.lock = new ReentrantReadWriteLock();
         this.isFull = lock.writeLock().newCondition();
         this.S = S;
     }
-    public void put(String id, ResultBuffer results){
+    public void put(String id, Buffer results){
         lock.writeLock().lock();
         try{
             while(clients.size()==S){
@@ -34,7 +34,7 @@ class ClientsMap{
     public void queueResult(String id, Message res){
         lock.readLock().lock();
         try{
-            ResultBuffer buffer = clients.get(id);
+            Buffer buffer = clients.get(id);
             if (buffer == null) return;
             buffer.queue(res);
         }
@@ -103,10 +103,10 @@ class ConnectionThread implements Runnable{
     Connection connection;
     ClientsMap clients;
     AuthenticationMap credentials;
-    RequestBuffer buffer;
+    BoundedBuffer buffer;
     Thread sendResults;
-    ResultBuffer results;
-    public ConnectionThread(Connection c, ClientsMap cli, AuthenticationMap cred, RequestBuffer buffer){
+    Buffer results;
+    public ConnectionThread(Connection c, ClientsMap cli, AuthenticationMap cred, BoundedBuffer buffer){
         this.connection = c;
         this.clients = cli;
         this.credentials = cred;
@@ -133,7 +133,7 @@ class ConnectionThread implements Runnable{
                         Login l = (Login) m;
                         boolean sucess = (!clients.isActive(l.getID()))&&(credentials.login(l.getID(), l.getPassword()));
                         if (sucess){
-                            results = new ResultBuffer();
+                            results = new Buffer();
                             clients.put(l.getID(), results);
                             connection.send(new MessageContainer(new Response(sucess)));
                             authenticated = true;
@@ -171,9 +171,9 @@ class ConnectionThread implements Runnable{
 
 class ConnectionResultsThread implements Runnable{
     Connection connection;
-    ResultBuffer results;
+    Buffer results;
 
-    public ConnectionResultsThread (Connection connection, ResultBuffer res){
+    public ConnectionResultsThread (Connection connection, Buffer res){
         this.connection = connection;
         this.results = res;
     }
@@ -183,7 +183,7 @@ class ConnectionResultsThread implements Runnable{
         while(connectionOpen){
             Message m;
             try {
-                m = results.unqueue();
+                m = (Message) (results.unqueue());
                 MessageContainer mc = new MessageContainer(m);
                 connection.send(mc);
             } 
@@ -195,19 +195,19 @@ class ConnectionResultsThread implements Runnable{
 }
 
 class RequestThread implements Runnable{
-    private RequestBuffer requests;
+    private BoundedBuffer requests;
     private ClientsMap cli;
     private ArmazemDadosPartilhados dataBase;
-    public RequestThread(RequestBuffer buffer, ClientsMap clients, ArmazemDadosPartilhados dataBase){
+    public RequestThread(BoundedBuffer buffer, ClientsMap clients, ArmazemDadosPartilhados dataBase){
         this.requests = buffer;
         this.cli = clients;
         this.dataBase = dataBase;
     }
     public void run(){ //trocar para alguma condição
         while(true){
-            Request r = requests.unqueue();
+            Request r = (Request) requests.unqueue();
             Message m = r.getMessage();
-//            System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
+           // System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
             Message res = processMessage(m);
             cli.queueResult(r.getId(), res);
         }
@@ -295,11 +295,11 @@ class RequestThread implements Runnable{
 class ThreadPool{
     final static int THREAD_POOL_SIZE = 10;
     private Thread[] threadPool = new Thread[THREAD_POOL_SIZE];
-    private RequestBuffer requestBuffer;
+    private BoundedBuffer requestBuffer;
 
     private ClientsMap clients;
 
-    public ThreadPool(ClientsMap map, RequestBuffer requests, ArmazemDadosPartilhados dataBase){
+    public ThreadPool(ClientsMap map, BoundedBuffer requests, ArmazemDadosPartilhados dataBase){
         this.clients = map;
         this.requestBuffer = requests;
         for (int i = 0; i<THREAD_POOL_SIZE; i++){
@@ -331,7 +331,7 @@ public class Server {
         }
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
-        RequestBuffer messages = new RequestBuffer();
+        BoundedBuffer messages = new BoundedBuffer(30);
 //        System.out.println("Inicializar thread pool"); // Para apagar
         ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
 //        System.out.println("Thread pool acabou"); // Para apagar
