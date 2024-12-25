@@ -57,8 +57,8 @@ public class ClientSingleThread implements Client {
             else connection.close();
             return sucessfull;
         }
-        return false;    
-        }
+        return false;
+    }
 
 
     /**
@@ -99,9 +99,9 @@ public class ClientSingleThread implements Client {
     public void multiPut(Map<String,byte[]> pairs) {
         MultiPut mp=new MultiPut(pairs);
         MessageContainer mc = new MessageContainer(mp);
-            connection.send(mc);
-            Message response=connection.receive().getMessage();
-            Success res = (Success) response;
+        connection.send(mc);
+        Message response=connection.receive().getMessage();
+        Success res = (Success) response;
     }
     /**
      * Método permite a um cliente, depois de autenticado,

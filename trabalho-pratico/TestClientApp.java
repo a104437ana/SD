@@ -187,7 +187,7 @@ public class TestClientApp {
             float time = 0;
             Client client = startClient(IS_MULTITHREADED);
             if (IS_MULTITHREADED) time = runMultiThreaded(client);
-            else time = runTest(client, ops);
+            else time = runTest(client, type, ops, access, ratio, top);
             client.logout();
             lock.lock();
             try{ if (time > maxTime) maxTime = time; }
@@ -197,9 +197,7 @@ public class TestClientApp {
             Timestamp start = new Timestamp(System.currentTimeMillis());
             Thread[] threads = new Thread[MULTITHREADED_THREADS];
             for (int i = 0; i < MULTITHREADED_THREADS; i++) {
-                threads[i] = new Thread() {
-                    public void run() { runTest(client, ops); }
-                };
+                threads[i] = new Thread(new WorkerMultiThread(client, type, ops, access, ratio, top));
                 threads[i].start();
             }
             try {
@@ -211,12 +209,29 @@ public class TestClientApp {
             Timestamp end = new Timestamp(System.currentTimeMillis());
             return end.getTime() - start.getTime();
         }
-        public float runTest(Client client, long operations) {
+        public float runTest(Client client, int typeWorkload, long operations, int accessRatio, int ratioType, long topOps) {
             float time = 0;
-            if (type == GET) time = getWorkload(operations, access, top, client);
-            else if (type == PUT) time = putWorkload(operations, access, top, client);
-            else if (type == PUTGET) time = putGetWorkload(operations, ratio, access, top, client);
+            if (typeWorkload == GET) time = getWorkload(operations, accessRatio, topOps, client);
+            else if (typeWorkload == PUT) time = putWorkload(operations, accessRatio, topOps, client);
+            else if (typeWorkload == PUTGET) time = putGetWorkload(operations, ratioType, accessRatio, topOps, client);
             return time;
+        }
+        class WorkerMultiThread implements Runnable {
+            private Client client;
+            private long operations;
+            private int accessRatio;
+            private int ratioType;
+            private long topOps;
+            private int typeWorkload;
+            WorkerMultiThread(Client c, int t, long o, int a, int r, long to) {
+                this.client = c;
+                this.operations = o;
+                this.accessRatio = a;
+                this.ratioType = r;
+                this.topOps = to;
+                this.typeWorkload = t;
+            }
+            public void run() { runTest(client, typeWorkload, operations, accessRatio, ratioType, topOps); }
         }
     }
 

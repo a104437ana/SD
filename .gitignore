@@ -8,3 +8,6 @@
 
 # Ignora arquivos .csv
 *.csv
+
+# Ignora arquivos temporários
+/trabalho-pratico/tmp/*

@@ -172,18 +172,9 @@ public class ClientMultiThread implements Client {
 
     public void logout() {
         if (!authenticated) return;
-        lock.lock();
-        try {
-            Message message = new Exit(userId);
-            requestBuffer.queue(message);
-            authenticated = false;
-//            while (!exited) condition.await();
-            dispatcher.close();
-            connection.close();
-        }
-        finally {
-            lock.unlock();
-        }
+        authenticated = false;
+        dispatcher.close();
+        connection.close();
     }
 
     private Buffer getBuffer(long id) {
@@ -198,6 +189,7 @@ public class ClientMultiThread implements Client {
     class Dispatcher {
         Thread send = new Thread(new SendThread());
         Thread receive = new Thread(new ReceiveThread());
+        boolean exit = false;
 
         private void run() {
             send.start();
@@ -206,18 +198,24 @@ public class ClientMultiThread implements Client {
 
         class SendThread implements Runnable {
             public void run() {
-                while (!Thread.interrupted()) {
+                while (!exit) {
                     try {
                         Message message = (Message) requestBuffer.unqueue();
                         MessageContainer mc = new MessageContainer(message);
                         connection.send(mc);
-                        if (message instanceof Exit) {
-                            exited = true;
-//                            condition.signalAll();
-                        }
                     }
                     catch (InterruptedException e) {
-                        e.printStackTrace();
+                        Message message = new Exit(userId);
+                        MessageContainer mc = new MessageContainer(message);
+                        connection.send(mc);
+                        lock.lock();
+                        try {
+                            exit = true;
+                            condition.signalAll();
+                        }
+                        finally {
+                            lock.unlock();
+                        }
                     }
                 }
             }
@@ -225,7 +223,7 @@ public class ClientMultiThread implements Client {
 
         class ReceiveThread implements Runnable {
             public void run() {
-                while (!Thread.interrupted()) {
+                while (!exit) {
                     MessageContainer mc = connection.receive();
                     if (mc != null) {
                         Message message = mc.getMessage();
@@ -240,8 +238,12 @@ public class ClientMultiThread implements Client {
         }
 
         private void close() {
+            lock.lock();
             send.interrupt();
             receive.interrupt();
+            try { while (!exit) condition.await(); }
+            catch (InterruptedException e) {}
+            finally { lock.unlock(); }
             try {
                 send.join();
                 receive.join();

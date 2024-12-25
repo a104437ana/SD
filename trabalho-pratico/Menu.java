@@ -8,6 +8,7 @@ public class Menu {
 
     private static Scanner in = new Scanner(System.in);
     private static boolean windows;
+    private static boolean exit = false;
 
     public interface Handler {
         public void execute();
@@ -58,7 +59,7 @@ public class Menu {
                 handlers.get(op-1).execute();
             }
         }
-        while (op != 0);
+        while (op != 0 && !exit);
     }
 
     public void show() {
@@ -113,5 +114,9 @@ public class Menu {
         }  
         catch(Exception e) {
         }  
+    }
+
+    public static void exit() {
+        exit = true;
     }
 }
