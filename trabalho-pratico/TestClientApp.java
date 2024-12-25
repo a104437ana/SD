@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +20,7 @@ public class TestClientApp {
     private static final int PUTGET = 2;
     private static boolean IS_MULTITHREADED = false;
     private static int MULTITHREADED_THREADS = 1;
+    private static boolean DIVIDE_OPS = false;
     private static float maxTime = 0;
     private static ReentrantLock lock = new ReentrantLock();
     private static boolean MULTI_CLIENT = false;
@@ -118,6 +118,7 @@ public class TestClientApp {
     }
 
     private float putWorkload(long ops, int access, long top, int clients) {
+        Timestamp start = new Timestamp(System.currentTimeMillis());
         Thread[] threads = new Thread[clients];
         for (int i = 0; i < clients; i++) {
             threads[i] = new Thread(new Worker(PUT, ops, -1, access, top));
@@ -131,11 +132,13 @@ public class TestClientApp {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return maxTime;
+        Timestamp end = new Timestamp(System.currentTimeMillis());
+        return end.getTime() - start.getTime();
     }
 
     private float getWorkload(long ops, int access, long top, int clients) {
         dataInitialization(ops);
+        Timestamp start = new Timestamp(System.currentTimeMillis());
         Thread[] threads = new Thread[clients];
         for (int i = 0; i < clients; i++) {
             threads[i] = new Thread(new Worker(GET, ops, -1, access, top));
@@ -149,11 +152,13 @@ public class TestClientApp {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return maxTime;
+        Timestamp end = new Timestamp(System.currentTimeMillis());
+        return end.getTime() - start.getTime();
     }
 
     private float putGetWorkload(long ops, int ratio, int access, long top, int clients) {
         dataInitialization(ops);
+        Timestamp start = new Timestamp(System.currentTimeMillis());
         Thread[] threads = new Thread[clients];
         for (int i = 0; i < clients; i++) {
             threads[i] = new Thread(new Worker(PUTGET, ops, ratio, access, top));
@@ -167,7 +172,8 @@ public class TestClientApp {
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return maxTime;
+        Timestamp end = new Timestamp(System.currentTimeMillis());
+        return end.getTime() - start.getTime();
     }
 
     class Worker implements Runnable {
@@ -189,9 +195,6 @@ public class TestClientApp {
             if (IS_MULTITHREADED) time = runMultiThreaded(client);
             else time = runTest(client, type, ops, access, ratio, top);
             client.logout();
-            lock.lock();
-            try{ if (time > maxTime) maxTime = time; }
-            finally { lock.unlock(); }
         }
         private float runMultiThreaded(Client client) {
             Timestamp start = new Timestamp(System.currentTimeMillis());
@@ -215,6 +218,20 @@ public class TestClientApp {
             else if (typeWorkload == PUT) time = putWorkload(operations, accessRatio, topOps, client);
             else if (typeWorkload == PUTGET) time = putGetWorkload(operations, ratioType, accessRatio, topOps, client);
             return time;
+        }
+        private long[] distributeOps() {
+            long operations = ops;
+            long lastOperations = ops;
+            if (DIVIDE_OPS) {
+                operations = ops / MULTITHREADED_THREADS;
+                lastOperations = operations + (ops - (operations * MULTITHREADED_THREADS));
+            }
+            long[] opsThreads = new long[MULTITHREADED_THREADS];
+            for (int i = 0; i < (MULTITHREADED_THREADS - 1); i++) {
+                opsThreads[i] = operations;
+            }
+            opsThreads[MULTITHREADED_THREADS - 1] = lastOperations;
+            return opsThreads;
         }
         class WorkerMultiThread implements Runnable {
             private Client client;
