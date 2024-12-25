@@ -116,7 +116,6 @@ class ConnectionThread implements Runnable{
             boolean connectionOpen = true;
             boolean authenticated = false;
             String authenticatedId = null;
-            while(connectionOpen){
                 while((!authenticated)&&connectionOpen){
                     MessageContainer mc = connection.receive();
                     if (mc != null) {
@@ -158,8 +157,7 @@ class ConnectionThread implements Runnable{
                             Exit e = (Exit) receive;
                             sendResults.interrupt();
                             clients.remove(e.getID());
-                            authenticated = false;
-                            authenticatedId = null;
+                            connectionOpen = false;
                             break;
                         }
                         else{
@@ -168,7 +166,6 @@ class ConnectionThread implements Runnable{
                         }
                     }
                 }
-            }
             connection.close();
     }
 }
