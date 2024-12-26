@@ -13,7 +13,6 @@ public class ClientSingleThread implements Client {
 
     public ClientSingleThread() throws IOException, UnknownHostException {
         ip = InetAddress.getByName("localhost");
-//        this.connection = new Connection(ip, 10000);
     }
 
     /**

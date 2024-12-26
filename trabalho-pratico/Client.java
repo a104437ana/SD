@@ -49,7 +49,6 @@ public interface Client {
      */
     public Map<String,byte[]> multiGet(Set<String> keys);
 
-
     /**
      * Método permite a um cliente, depois de autenticado,
      * aceder a um array binário guardado anteriormente na base de dados do servidor,
@@ -61,7 +60,7 @@ public interface Client {
      */
     public byte[] getWhen(String key, String keyCond, byte[] valueCond);
 
-
     public void logout();
+    
     public String getUserId();
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 public class Value extends Message {
     byte[] value;
 
-    
     public Value(byte[] value){
         this.value=value;
     }

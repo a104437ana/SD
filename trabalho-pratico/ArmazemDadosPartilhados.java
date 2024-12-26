@@ -137,7 +137,6 @@ class ArmazemDadosPartilhados {
                     keysWithDados.add(key);
                     dado.l.lock();
                 }
-                //else pairs.put(key,null);
             }
         } finally {
             l.unlock();
@@ -157,7 +156,6 @@ class ArmazemDadosPartilhados {
         byte[] value;
         l.lock();
         try {
-            //if (dado == null) return null;
             while ((dado = map.get(keyCond)) == null) {
                 c.await();
             }
