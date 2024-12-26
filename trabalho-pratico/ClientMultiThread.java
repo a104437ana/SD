@@ -229,7 +229,7 @@ public class ClientMultiThread implements Client {
                         Message message = mc.getMessage();
                         if (message != null) {
                             long id = message.getId();
-                            Buffer buffer = resultBuffer.get(id);
+                            Buffer buffer = getBuffer(id);
                             buffer.queue(message);
                         }
                     }

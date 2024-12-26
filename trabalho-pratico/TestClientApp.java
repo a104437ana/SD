@@ -368,7 +368,7 @@ public class TestClientApp {
         System.out.println("      <int> : Numero de operacoes a realizar");
         System.out.println("    Distribuicao:");
         System.out.println("      -d <int> <int> : primeiro parametro percentagem de acessos ao top, de 0 a 100");
-        System.out.println("                       segundo parametro percentagem do top, de 0 a 100");
+        System.out.println("                       segundo parametro percentagem do top do dataset, de 0 a 100");
         System.out.println("                       Distribuicao por defeito 50 50, 50% acessos a 50% do dataset");
         System.out.println("    Numero de clientes:");
         System.out.println("      -c <int> : Numero de clientes singlethread ou threads de cliente multithread");
