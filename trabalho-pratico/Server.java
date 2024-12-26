@@ -2,102 +2,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-class ClientsMap{
-    Map<String,Buffer> clients;
-    ReentrantReadWriteLock lock;
-    Condition isFull;
-    int S;
-    public ClientsMap(int S){
-        this.clients = new HashMap<String, Buffer>(S);
-        this.lock = new ReentrantReadWriteLock();
-        this.isFull = lock.writeLock().newCondition();
-        this.S = S;
-    }
-    public void put(String id, Buffer results){
-        lock.writeLock().lock();
-        try{
-            while(clients.size()==S){
-                    isFull.await();
-            }
-            this.clients.put(id, results);
-        } 
-        catch (Exception ignore) { }
-        finally{
-            lock.writeLock().unlock();
-        }
-    }
-    public void queueResult(String id, Message res){
-        lock.readLock().lock();
-        try{
-            Buffer buffer = clients.get(id);
-            if (buffer == null) return;
-            buffer.queue(res);
-        }
-        finally{
-            lock.readLock().unlock();
-        }
-    }
-    public void remove(String id){
-        lock.writeLock().lock();
-        try{
-            clients.remove(id);
-            isFull.signal();
-        } catch (Exception ignore) { }
-        finally{
-            lock.writeLock().unlock();
-        }
-    }
-    public boolean isActive(String id){
-        boolean res;
-        lock.readLock().lock();
-        try{
-             res = clients.containsKey(id);
-        }
-        finally{
-            lock.readLock().unlock();
-        }
-        return res;
-    }
-}
-
-class AuthenticationMap{
-    Map<String,String> credentials;
-    ReentrantReadWriteLock lock;
-    public AuthenticationMap(){
-        this.credentials = new HashMap<String, String>();
-        this.lock = new ReentrantReadWriteLock();
-    }
-    public boolean register(String id, String password){
-        lock.writeLock().lock();
-        try{
-            if(this.credentials.containsKey(id)) return false;
-            else{
-                this.credentials.put(id, password);
-                return true;
-            }
-        }
-        finally{
-            lock.writeLock().unlock();
-        }
-    }
-    public boolean login(String id, String password){
-        boolean res = false;
-        lock.readLock().lock();
-        try{
-            String correctPassword = credentials.get(id);
-            if(password.equals(correctPassword)) res = true;
-        }
-        finally{
-            lock.readLock().unlock();
-        }
-        return res;
-    }
-}
 
 class ConnectionThread implements Runnable{
     Connection connection;
@@ -203,11 +108,10 @@ class RequestThread implements Runnable{
         this.cli = clients;
         this.dataBase = dataBase;
     }
-    public void run(){ //trocar para alguma condição
+    public void run(){
         while(true){
             Request r = (Request) requests.unqueue();
             Message m = r.getMessage();
-           // System.out.println("Recebida mensagem " + m.getClass().getSimpleName());
             Message res = processMessage(m);
             cli.queueResult(r.getId(), res);
         }
@@ -331,10 +235,8 @@ public class Server {
         }
         ClientsMap clients = new ClientsMap(S);
         AuthenticationMap credentials = new AuthenticationMap();
-        BoundedBuffer messages = new BoundedBuffer(30);
-//        System.out.println("Inicializar thread pool"); // Para apagar
+        BoundedBuffer messages = new BoundedBuffer();
         ThreadPool pool = new ThreadPool(clients, messages, Server.dataBase);
-//        System.out.println("Thread pool acabou"); // Para apagar
 
         try{
             ServerSocket ss = new ServerSocket(10000);

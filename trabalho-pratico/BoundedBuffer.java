@@ -10,10 +10,6 @@ public class BoundedBuffer{
     private Condition bufferEmpty = lock.newCondition();
     private Condition bufferFull = lock.newCondition();
 
-    public BoundedBuffer (int size) {
-        this.BUFFER_SIZE = size;
-    }
-
     public void queue(Object o){
         lock.lock();
         try{
