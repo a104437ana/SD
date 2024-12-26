@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientMultiThread implements Client {
     private boolean authenticated = false;
-    private boolean exited = false;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
     private Buffer requestBuffer = new Buffer();

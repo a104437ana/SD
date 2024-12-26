@@ -117,7 +117,7 @@ class RequestThread implements Runnable{
         }
     }
     /**
-     * Processa uma mensagem do tipo ... Get
+     * Processa uma mensagem do tipo Get
      * @param message
      */
     private Message processMessage(Get message) {
@@ -128,18 +128,18 @@ class RequestThread implements Runnable{
     }
 
     /**
-     * Processa uma mensagem do tipo ... Put
+     * Processa uma mensagem do tipo Put
      * @param message
      */
     private Message processMessage(Put message) {
-        dataBase.put(message.getKey(), message.getValue()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        dataBase.put(message.getKey(), message.getValue());
         Message res = new Success();
         res.setId(message.getId());
         return res;
     }
 
     /**
-     * Processa uma mensagem do tipo ... MultiGet
+     * Processa uma mensagem do tipo MultiGet
      * @param message
      */
     private Message processMessage(MultiGet message) {
@@ -150,24 +150,24 @@ class RequestThread implements Runnable{
     }
 
     /**
-     * Processa uma mensagem do tipo ... MultiPut
+     * Processa uma mensagem do tipo MultiPut
      * @param message
      */
     private Message processMessage(MultiPut message) {
-        dataBase.multiPut(message.getPairs()); // Alterar, método deve retornar um booleano ou dar trow de exception
+        dataBase.multiPut(message.getPairs());
         Message res = new Success();
         res.setId(message.getId());
         return res;
     }
 
     /**
-     * Processa uma mensagem do tipo ... GetWhen
+     * Processa uma mensagem do tipo GetWhen
      * @param message
      */
     private Message processMessage(GetWhen message) {
         byte[] value = null;
         try {
-            value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond()); // Alterar, método deve retornar um booleano ou dar trow de exception
+            value = dataBase.getWhen(message.getKey(), message.getKeyCond(), message.getValueCond());
         }
         catch (InterruptedException e) {
             e.printStackTrace();

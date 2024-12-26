@@ -3,7 +3,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class TestClientApp {
     
@@ -21,8 +20,6 @@ public class TestClientApp {
     private static boolean IS_MULTITHREADED = false;
     private static int MULTITHREADED_THREADS = 1;
     private static boolean DIVIDE_OPS = false;
-    private static float maxTime = 0;
-    private static ReentrantLock lock = new ReentrantLock();
     private static boolean MULTI_CLIENT = false;
 
     private float putWorkload(long ops, int access, long top, Client client) {
