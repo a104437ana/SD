@@ -32,6 +32,7 @@ public class TestClientApp {
         List<String[]> data = new ArrayList<String[]>();
         String[] header = new String[] {"op", "time", "key"};
         data.add(header);
+        float totalTime = 0;
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
         for (long i = 0; i < ops; i++) {
@@ -39,7 +40,9 @@ public class TestClientApp {
             String key = Long.toString(getKey(access, top, rand, ops));
             client.put(key, value);
             time = System.nanoTime() - time;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key};
+            float floatTime = ((float) time) / 1000000;
+            totalTime += floatTime;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
             data.add(line);
         }
 
@@ -48,6 +51,7 @@ public class TestClientApp {
         CsvExport csvExport = new CsvExport();
         csvExport.setOptionalName(client.getUserId());
         fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, -1, -1);
         return end.getTime() - start.getTime();
     }
 
@@ -57,6 +61,7 @@ public class TestClientApp {
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
         String[] header = new String[] {"op", "time", "key"};
+        float totalTime = 0;
         data.add(header);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
@@ -66,7 +71,9 @@ public class TestClientApp {
             String key = Long.toString(getKey(access, top, rand, ops));
             value = client.get(key);
             time = System.nanoTime() - time;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key};
+            float floatTime = ((float) time) / 1000000;
+            totalTime += floatTime;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
             data.add(line);
         }
 
@@ -75,6 +82,7 @@ public class TestClientApp {
         CsvExport csvExport = new CsvExport();
         csvExport.setOptionalName(client.getUserId());
         fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, -1, -1);
         return end.getTime() - start.getTime();
     }
 
@@ -84,6 +92,9 @@ public class TestClientApp {
         byte[] value = new byte[VALUE_SIZE];
         List<String[]> data = new ArrayList<String[]>();
         String[] header = new String[] {"op", "time", "key", "type"};
+        float totalTime = 0;
+        long puts = 0;
+        long gets = 0;
         data.add(header);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
@@ -98,14 +109,18 @@ public class TestClientApp {
                 key = Long.toString(getKey(access, top, rand, ops));
                 byte[] v = new byte[VALUE_SIZE];
                 client.put(key, v);
+                puts++;
             }
             // Get
             else {
                 key = Long.toString(getKey(access, top, rand, ops));
                 value = client.get(key);
+                gets++;
             }
             time = System.nanoTime() - time;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(((float) time) / 1000000), key, Boolean.toString(isPut)};
+            float floatTime = ((float) time) / 1000000;
+            totalTime += floatTime;
+            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key, Boolean.toString(isPut)};
             data.add(line);
         }
 
@@ -114,6 +129,7 @@ public class TestClientApp {
         CsvExport csvExport = new CsvExport();
         csvExport.setOptionalName(client.getUserId());
         fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, puts, gets);
         return end.getTime() - start.getTime();
     }
 
@@ -174,6 +190,20 @@ public class TestClientApp {
         }
         Timestamp end = new Timestamp(System.currentTimeMillis());
         return end.getTime() - start.getTime();
+    }
+
+    private void exportTotal(CsvExport csvExport, float totalTime, long ops, long puts, long gets) {
+        List<String[]> data = new ArrayList<String[]>();
+        String[] header;
+        if ((puts != -1) && (gets != -1)) header = new String[] {"total ops", "total time", "total puts", "total gets"};
+        else header = new String[] {"total ops", "total time"};
+        data.add(header);
+        String[] line;
+        if ((puts != -1) && (gets != -1)) line = new String[] {Long.toString(ops), Float.toString(totalTime), Long.toString(puts), Long.toString(gets)};
+        else line = new String[] {Long.toString(ops), Float.toString(totalTime)};
+        data.add(line);
+        csvExport.setOptionalName("total");
+        csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
     }
 
     class Worker implements Runnable {
@@ -367,14 +397,13 @@ public class TestClientApp {
         System.out.println("    Numero de operacoes:");
         System.out.println("      <int> : Numero de operacoes a realizar");
         System.out.println("    Distribuicao:");
-        System.out.println("      -d <int> <int> : primeiro parametro percentagem de acessos ao top, de 0 a 100");
-        System.out.println("                       segundo parametro percentagem do top do dataset, de 0 a 100");
+        System.out.println("      -d <int> <int> : Primeiro parametro percentagem de acessos ao top, de 0 a 100");
+        System.out.println("                       Segundo parametro percentagem do top do dataset, de 0 a 100");
         System.out.println("                       Distribuicao por defeito 50 50, 50% acessos a 50% do dataset");
         System.out.println("    Numero de clientes:");
-        System.out.println("      -c <int> : Numero de clientes singlethread ou threads de cliente multithread");
-        System.out.println("                 Valor por defeito 1");
+        System.out.println("      -c <int> : Numero de clientes, valor por defeito 1");
         System.out.println("    Tipo de cliente:");
-        System.out.println("      -m : Cliente multithread");
+        System.out.println("      -m <int> : Cliente multithread, e número de threads de cada cliente");
         System.out.println("      -s : Cliente singlethread, valor por defeito");
     }
 
