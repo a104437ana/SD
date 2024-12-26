@@ -26,9 +26,9 @@ public class TestClientApp {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
-        List<String[]> data = new ArrayList<String[]>();
-        String[] header = new String[] {"op", "time", "key"};
-        data.add(header);
+//        List<String[]> data = new ArrayList<String[]>();
+//        String[] header = new String[] {"op", "time", "key"};
+//        data.add(header);
         float totalTime = 0;
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -39,16 +39,16 @@ public class TestClientApp {
             time = System.nanoTime() - time;
             float floatTime = ((float) time) / 1000000;
             totalTime += floatTime;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
-            data.add(line);
+//            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
+//            data.add(line);
         }
 
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "Put";
         CsvExport csvExport = new CsvExport();
-        csvExport.setOptionalName(client.getUserId());
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
-        exportTotal(csvExport, totalTime, ops, -1, -1);
+//        csvExport.setOptionalName(client.getUserId());
+//        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, -1, -1, client.getUserId());
         return end.getTime() - start.getTime();
     }
 
@@ -56,10 +56,10 @@ public class TestClientApp {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
-        List<String[]> data = new ArrayList<String[]>();
-        String[] header = new String[] {"op", "time", "key"};
+//        List<String[]> data = new ArrayList<String[]>();
+//        String[] header = new String[] {"op", "time", "key"};
         float totalTime = 0;
-        data.add(header);
+//        data.add(header);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -70,16 +70,16 @@ public class TestClientApp {
             time = System.nanoTime() - time;
             float floatTime = ((float) time) / 1000000;
             totalTime += floatTime;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
-            data.add(line);
+//            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key};
+//            data.add(line);
         }
 
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "Get";
         CsvExport csvExport = new CsvExport();
-        csvExport.setOptionalName(client.getUserId());
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
-        exportTotal(csvExport, totalTime, ops, -1, -1);
+//        csvExport.setOptionalName(client.getUserId());
+//        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, -1, -1, client.getUserId());
         return end.getTime() - start.getTime();
     }
 
@@ -87,12 +87,12 @@ public class TestClientApp {
         if (client == null) return -1;
         Random rand = new Random();
         byte[] value = new byte[VALUE_SIZE];
-        List<String[]> data = new ArrayList<String[]>();
-        String[] header = new String[] {"op", "time", "key", "type"};
+//        List<String[]> data = new ArrayList<String[]>();
+//        String[] header = new String[] {"op", "time", "key", "type"};
         float totalTime = 0;
         long puts = 0;
         long gets = 0;
-        data.add(header);
+//        data.add(header);
 
         Timestamp start = new Timestamp(System.currentTimeMillis());
 
@@ -117,16 +117,16 @@ public class TestClientApp {
             time = System.nanoTime() - time;
             float floatTime = ((float) time) / 1000000;
             totalTime += floatTime;
-            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key, Boolean.toString(isPut)};
-            data.add(line);
+//            String[] line = new String[] {Long.toString(i+1), Float.toString(floatTime), key, Boolean.toString(isPut)};
+//            data.add(line);
         }
 
         Timestamp end = new Timestamp(System.currentTimeMillis());
         TESTNAME = NAME + "PutGet";
         CsvExport csvExport = new CsvExport();
-        csvExport.setOptionalName(client.getUserId());
-        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
-        exportTotal(csvExport, totalTime, ops, puts, gets);
+//        csvExport.setOptionalName(client.getUserId());
+//        fileName = csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
+        exportTotal(csvExport, totalTime, ops, puts, gets, client.getUserId());
         return end.getTime() - start.getTime();
     }
 
@@ -189,7 +189,7 @@ public class TestClientApp {
         return end.getTime() - start.getTime();
     }
 
-    private void exportTotal(CsvExport csvExport, float totalTime, long ops, long puts, long gets) {
+    private void exportTotal(CsvExport csvExport, float totalTime, long ops, long puts, long gets, String optionalName) {
         List<String[]> data = new ArrayList<String[]>();
         String[] header;
         if ((puts != -1) && (gets != -1)) header = new String[] {"total ops", "total time", "total puts", "total gets"};
@@ -199,7 +199,7 @@ public class TestClientApp {
         if ((puts != -1) && (gets != -1)) line = new String[] {Long.toString(ops), Float.toString(totalTime), Long.toString(puts), Long.toString(gets)};
         else line = new String[] {Long.toString(ops), Float.toString(totalTime)};
         data.add(line);
-        csvExport.setOptionalName("total");
+        csvExport.setOptionalName("total" + optionalName);
         csvExport.exportDataCsv(data, DIRECTORY, TESTNAME, MULTI_CLIENT || IS_MULTITHREADED);
     }
 
