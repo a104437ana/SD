@@ -112,7 +112,6 @@ public class CsvExport {
         list.add(line2);
 
         CsvExport csvExport = new CsvExport();
-//        System.out.println(csvExport.lastId("tmp", "test", false));
         csvExport.exportDataCsv(list, "tmp", "test", false);
     }
 }

@@ -240,7 +240,7 @@ public class Server {
 
         try{
             ServerSocket ss = new ServerSocket(10000);
-            System.out.println("Server conectado na porta " + ss.getLocalPort()); // Para apagar
+            System.out.println("Server conectado na porta " + ss.getLocalPort());
             boolean server_open = true;
             while(server_open) {
                 Socket s = ss.accept();
